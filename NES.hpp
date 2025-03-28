@@ -3,8 +3,9 @@
 
 #include <string>
 
-#include "Bus.hpp"
+#include "SystemBus.hpp"
 #include "CPU.hpp"
+#include "Cartridge.hpp"
 
 class NES {
 public:
@@ -13,12 +14,13 @@ public:
     //void run();
 
 private:
-    Bus bus;
+    SystemBus systemBus;
+    //PPUBus ppuBus;
     CPU cpu;
     //PPU ppu;
     //APU apu;
-    //Memory memory;
-    //Cartridge cartridge;
+    Cartridge cart;
+
 };
 
 #endif

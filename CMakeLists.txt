@@ -8,5 +8,7 @@ add_executable(NESEmu main.cpp
         NES.hpp
         CPU.cpp
         CPU.hpp
-        Bus.cpp
-        Bus.hpp)
+        SystemBus.cpp
+        SystemBus.hpp
+        Cartridge.cpp
+        Cartridge.hpp)

@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string>
 
-#include "Bus.hpp"
+#include "SystemBus.hpp"
 
 enum Flags {
     C, Z, I, D, B, U, V, N
@@ -41,7 +41,7 @@ private:
     uint8_t getInstrData();
 
     /** BUS connection **/
-    Bus& bus;
+    SystemBus* bus;
     //Read value from data bus
     uint8_t read(uint16_t address);
     //Write value to data bus
