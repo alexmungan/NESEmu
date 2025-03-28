@@ -50,12 +50,19 @@ private:
     /** 2A03 instruction matrix **/
     struct opInfo {
         std::string pneumonic;
-        AddressingMode addressing_mode = IMM;
+        AddressingMode addressing_mode = IMP;
         //TODO:Add pointer to addressing mode function
         //TODO:Add pointer to execution function
         uint8_t cycles = 0;
     };
     std::array<opInfo, 16*16> instrMatrix;
+
+    /** CPU Addressing Modes **/
+
+    /** CPU instructions **/
+
+    /** CPU main emulation function **/
+
 
 };
 
