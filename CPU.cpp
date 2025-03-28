@@ -1,8 +1,8 @@
 
 #include "CPU.hpp"
 
-CPU::CPU(Bus* bus_ptr) {
-    this->bus = bus_ptr;
+CPU::CPU(Bus& bus) {
+    this->bus = bus;
 
     //Initialize the instruction matrix https://web.archive.org/web/20221112231348if_/http://archive.6502.org/datasheets/rockwell_r650x_r651x.pdf
     instrMatrix  = {

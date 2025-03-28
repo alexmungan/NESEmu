@@ -3,6 +3,9 @@
 
 #include <string>
 
+#include "Bus.hpp"
+#include "CPU.hpp"
+
 class NES {
 public:
     //TODO: constructor()
@@ -10,8 +13,10 @@ public:
     //void run();
 
 private:
-    //CPU cpu;
+    Bus bus;
+    CPU cpu;
     //PPU ppu;
+    //APU apu;
     //Memory memory;
     //Cartridge cartridge;
 };

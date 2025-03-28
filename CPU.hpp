@@ -17,7 +17,7 @@ enum AddressingMode {
 
 class CPU {
 public:
-    explicit CPU(Bus* bus_ptr);
+    explicit CPU(Bus& bus_ptr);
     ~CPU();
 
     /** Registers **/
@@ -41,7 +41,7 @@ private:
     uint8_t getInstrData();
 
     /** BUS connection **/
-    Bus *bus;
+    Bus& bus;
     //Read value from data bus
     uint8_t read(uint16_t address);
     //Write value to data bus
