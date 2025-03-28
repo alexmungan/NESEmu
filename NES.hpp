@@ -21,6 +21,9 @@ private:
     //APU apu;
     Cartridge cart;
 
+public:
+    //TODO: main RUN() function, add connect() functions too
+
 };
 
 #endif
