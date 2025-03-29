@@ -17,7 +17,7 @@ enum AddressingMode {
 
 class CPU {
 public:
-    explicit CPU(Bus& bus_ptr);
+    CPU();
     ~CPU();
 
     /** Registers **/
@@ -34,14 +34,14 @@ private:
     void setStatusReg(bool set, Flags flag);
     bool getStatusReg(Flags flag);
 
-    //Working data
-    uint8_t instrData = 0x00;
-    //Function to get instruction's data operand
-    //Various possible sources based on addressing mode
-    uint8_t getInstrData();
+    //TODO: opcode  //
+    //uint8_t workingData = 0x00; //
+    //TODO: fetchedOperand??? use 16 bit data type?
 
     /** BUS connection **/
-    SystemBus* bus;
+    SystemBus* system_bus_ptr = nullptr;
+    //Create a connection to the bus
+    void connect2Bus(SystemBus *bus_ptr);
     //Read value from data bus
     uint8_t read(uint16_t address);
     //Write value to data bus
@@ -56,12 +56,6 @@ private:
         uint8_t cycles = 0;
     };
     std::array<opInfo, 16*16> instrMatrix;
-
-    /** CPU Addressing Modes **/
-
-    /** CPU instructions **/
-
-    /** CPU main emulation function **/
 
 
 };

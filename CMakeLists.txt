@@ -11,4 +11,6 @@ add_executable(NESEmu main.cpp
         SystemBus.cpp
         SystemBus.hpp
         Cartridge.cpp
-        Cartridge.hpp)
+        Cartridge.hpp
+        Constants.cpp
+        Constants.hpp)

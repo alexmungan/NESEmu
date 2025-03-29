@@ -9,9 +9,8 @@
 
 class NES {
 public:
-    //TODO: constructor()
-    //void initialize(const std::string &romPath);
-    //void run();
+    NES();
+    ~NES();
 
 private:
     SystemBus systemBus;
@@ -22,7 +21,11 @@ private:
     Cartridge cart;
 
 public:
-    //TODO: main RUN() function, add connect() functions too
+    //Function to initialize NES system (basically, insert cartridge)
+    void initialize(const std::string &romPath);
+
+    //Function to run the inserted game
+    void run();
 
 };
 

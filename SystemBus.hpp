@@ -9,7 +9,7 @@
 #include <array>
 #include <cstdint>
 
-#include "CPU.hpp"
+#include "Cartridge.hpp"
 
 class SystemBus {
 public:
@@ -25,12 +25,12 @@ private:
     //bool BRK //Software interrupt TODO: Do I even need this here?
 
     //Devices connected to the bus
-    //CPU makes requests to the bus and is of course connected to the bus, but
+    //Note: CPU makes requests to the bus and is of course connected to the bus, but
     //The connection is only needed from the CPU class
     //TODO: Other devices the bus is connected to?
     //PPU (for CPU-PPU communication via writes to mem mapped PPU registers)
     //APU (for CPU-APU communication via writes to mem mapped APU registers)
-    //Cartridge (to read from CHR/PRG-ROM and write to cartridge RAM if available)
+    Cartridge* cartridge_ptr = nullptr;
     //I/O?????
     std::array<uint8_t, 64 * 1024> RAM; //Memory space (64 KB) for now (later will be the 2KB of system RAM
 
@@ -45,7 +45,10 @@ public:
     //The address correspond to the address range of some other device
     //connected to the data bus. This device will go to this address and
     //place its contents on the data bus for the CPU to read.
-    uint8_t read(uint16_t address, bool bReadOnly = false);
+    uint8_t read(uint16_t address);
+
+    //Connect to devices
+    void connect2cartridge(Cartridge* cartridge);
 };
 
 
