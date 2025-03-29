@@ -26,7 +26,7 @@ void Cartridge::loadROM(const std::string &rom_path) {
         //TODO:cleanup resources before exit
         exit(EXIT_FAILURE);
     }
-    if (rom_file.is_open) rom_file.close();
+    if (rom_file.is_open()) rom_file.close();
 
     //Check File Format (Using original .nes format for now)
     bool iNESFormat=false;
