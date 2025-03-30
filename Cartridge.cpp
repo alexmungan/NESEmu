@@ -21,6 +21,7 @@ void Cartridge::loadROM(const std::string &rom_path) {
     rom_file.seekg(0, std::ios::beg); //Go back to beginning of file
 
     // Read the file into buffer
+    rom_image.resize(file_size);
     if (!rom_file.read(reinterpret_cast<char*>(rom_image.data()), file_size)) {
         std::cerr << "Error reading file: " << rom_path << std::endl;
         //TODO:cleanup resources before exit

@@ -1,0 +1,7 @@
+This directory contains NES ROMs. Some are used for testing and others are actual games.
+More specific purposes are given below:
+
+test_loadRoms1.nes -    Tests loadRom function when being used with CPU only NES. I.e. it only
+                        checks to see if PRG_ROM is loaded into the cartridge's PRG_ROM vector
+                        correctly.
+test_loadRoms2.nes -    Is not in iNES format. Used to test that program exits when non iNES file is used.

@@ -26,7 +26,8 @@ set(TEST_FILES
 )
 
 # Add an option to control whether to enable the tests
-option(ENABLE_TESTS "Enable tests" ON)
+# **** Must manually delete or update CMakeCache.txt to update this ****
+option(ENABLE_TESTS "Enable tests" OFF)
 
 # Download Google Test via FetchContent only if not already present
 if (NOT GTEST_DOWNLOAD)
@@ -48,6 +49,6 @@ if (ENABLE_TESTS)
 endif()
 
 # Set up the normal emulator executable
-if(!ENABLE_TESTS)
+if(NOT ENABLE_TESTS)
     add_executable(NESEmu main.cpp ${SOURCE_FILES})
 endif()

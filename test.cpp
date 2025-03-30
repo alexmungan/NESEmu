@@ -1,11 +1,19 @@
+#include <string>
+
 #include <gtest/gtest.h>
 
-// A simple function to test
-int add(int a, int b) {
-    return a + b;
-}
+#include "Cartridge.hpp"
 
-// Test case for the add function
-TEST(AdditionTest, PositiveNumbers) {
-    EXPECT_EQ(add(2, 3), 5);  // Test that 2 + 3 == 5
+/** Tests cartridge loading for NES with only 6502 implemented **/
+// Specially, I test if PRG-ROM is loaded into the cartridge's PRG_ROM vector properly
+TEST(CartridgeLoading, PRG_ROM) {
+    Cartridge cartridge;
+    std::string rom_path = "../ROMs/test_loadRoms1.nes";
+    cartridge.loadROM(rom_path);
+}
+//Tests that the program exits and outputs error if rom file is not iNES format
+TEST(CartridgeLoading, InvalidFormat) {
+    Cartridge cartridge;
+    std::string rom_path = "../ROMs/test_loadRoms2.nes";
+    ASSERT_DEATH(cartridge.loadROM(rom_path), "Invalid NES ROM file format! Only use files of iNES format. ");
 }
