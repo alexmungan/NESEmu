@@ -10,4 +10,7 @@ constexpr size_t KIBIBYTE = 1024;
 constexpr size_t HEADER_SIZE = 16;
 constexpr size_t TRAINER_SIZE = 512; //the trainer size, if it exists
 
+/** Memory Layout constants **/
+constexpr size_t PRG_ROM_START = 0x8000;
+
 #endif //CONSTANTS_HPP

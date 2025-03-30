@@ -29,15 +29,8 @@ public:
     //Read a value from the PRG ROM memory space
     uint8_t readPRG(uint16_t address);
 
-    //Write a value to PRG ROM memory space
-    void writePRG(uint16_t address, uint8_t data);
-
     //Read a value from the CHR ROM memory space
     uint8_t readCHR(uint16_t address);
-
-    //Write a value to PRG ROM memory space
-    void writeCHR(uint16_t address, uint8_t data);
-
 
 };
 

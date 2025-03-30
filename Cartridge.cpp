@@ -1,6 +1,8 @@
 #include "Cartridge.hpp"
 
 Cartridge::Cartridge() {
+    PRG_ROM.reserve(8* KIBIBYTE);
+    CHR_ROM.reserve(8 * KIBIBYTE);
 }
 
 Cartridge::~Cartridge() {
@@ -64,17 +66,9 @@ void Cartridge::loadROM(const std::string &rom_path) {
 }
 
 uint8_t Cartridge::readPRG(uint16_t address) {
-
-}
-
-void Cartridge::writePRG(uint16_t address, uint8_t data) {
-
+    return PRG_ROM[address - PRG_ROM_START];
 }
 
 uint8_t Cartridge::readCHR(uint16_t address) {
-
-}
-
-void Cartridge::writeCHR(uint16_t address, uint8_t data) {
 
 }
