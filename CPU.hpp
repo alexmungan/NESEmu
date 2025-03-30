@@ -25,8 +25,8 @@ public:
     uint8_t X = 0x00;
     uint8_t Y = 0x00;
     uint8_t SP = 0x00;
-    uint16_t PC = 0x00;
-    uint8_t status_reg = 0x00; //bitfield
+    uint16_t PC = 0x00; //0xFFFC???
+    uint8_t status_reg = 0b00000100; //bitfield
 
 private:
     /** Helper functions and variables **/
@@ -47,15 +47,14 @@ private:
     //Write value to data bus
     void write(uint16_t address, uint8_t data);
 
-    /** 2A03 instruction matrix **/
+    /** 2A03 opcode matrix **/
     struct opInfo {
         std::string pneumonic;
         AddressingMode addressing_mode = IMP;
-        //TODO:Add pointer to addressing mode function
-        //TODO:Add pointer to execution function
+        std::vector<void(*)()> cycle_op_list; //List of cycle-based-operations that make up the instruction
         uint8_t cycles = 0;
     };
-    std::array<opInfo, 16*16> instrMatrix;
+    std::array<opInfo, 16*16> opMatrix;
 
 
 };

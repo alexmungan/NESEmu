@@ -10,6 +10,7 @@
 #include <cstdint>
 
 #include "Cartridge.hpp"
+#include "Constants.hpp"
 
 class SystemBus {
 public:
@@ -32,9 +33,11 @@ private:
     //APU (for CPU-APU communication via writes to mem mapped APU registers)
     Cartridge* cartridge_ptr = nullptr;
     //I/O?????
-    std::array<uint8_t, 64 * 1024> RAM; //Memory space (64 KB) for now (later will be the 2KB of system RAM
+    std::array<uint8_t, 2 * KIBIBYTE> RAM; //2KB of system RAM
 
 public:
+    /** Bus reading and writing **/
+    /** Should not be done unless required devices have been connected **/
     //CPU puts a value on the data bus and address on implied address bus
     //The address corresponds to the address range of some other device
     //connected to the data bus. This device will have the contents at
