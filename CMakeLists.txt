@@ -17,6 +17,7 @@ set(SOURCE_FILES
         Cartridge.cpp
         Cartridge.hpp
         Constants.hpp
+        global_vars.hpp
 )
 
 # Source files for test executable

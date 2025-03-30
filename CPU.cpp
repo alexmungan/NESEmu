@@ -1,27 +1,18 @@
 
 #include "CPU.hpp"
 
-CPU::CPU() {
+uint64_t cycles = 0;
 
+CPU::CPU() {
     //Initialize the opcode matrix https://web.archive.org/web/20221112231348if_/http://archive.6502.org/datasheets/rockwell_r650x_r651x.pdf
-    opMatrix  = {{
-    /*0*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*1*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*2*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*3*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*4*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*5*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*6*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*7*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*8*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*9*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*A*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*B*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*C*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*D*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*E*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0},
-    /*F*/{"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}, {"", IMP, {}, 0}
-    }};
+    opMatrix.resize(16*16);
+    //CLC
+    opMatrix[0x18].pneumonic = "CLC";
+    opMatrix[0x18].addressing_mode = IMP;
+    opMatrix[0x18].cycle_op_list.push_back(waste_cycle);
+    opMatrix[0x18].cycle_op_list.push_back(clear_carry);
+    opMatrix[0x18].cycles = 2;
+
 }
 
 CPU::~CPU() {
@@ -50,4 +41,44 @@ uint8_t CPU::read(uint16_t address) {
 void CPU::write(uint16_t address, uint8_t data) {
     system_bus_ptr->write(address, data);
 }
+
+std::string CPU::getPneumonic(uint8_t opcode) {
+    return opMatrix[opcode].pneumonic;
+}
+
+AddressingMode CPU::getAddressingMode(uint8_t opcode) {
+    return opMatrix[opcode].addressing_mode;
+}
+
+CPU::cycle_operation CPU::getNextFunctionPtr(uint8_t opcode) {
+    return opMatrix[opcode].cycle_op_list[(instr_remaining_cycles - 1)];
+}
+
+uint8_t CPU::getCycles(uint8_t opcode) {
+    return opMatrix[opcode].cycles;
+}
+
+/****/
+
+uint8_t CPU::fetch_opcode() {
+    opcode = read(PC);
+    PC++;
+    instr_remaining_cycles = getCycles(opcode);
+    instr_remaining_cycles--;
+    return 1;
+}
+
+uint8_t CPU::waste_cycle() {
+    instr_remaining_cycles--;
+    return 1;
+}
+
+uint8_t CPU::clear_carry() {
+    setStatusReg(false, C);
+    return 0;
+}
+
+
+
+
 

@@ -6,6 +6,7 @@
 #include "Cartridge.hpp"
 #include "Constants.hpp"
 #include "SystemBus.hpp"
+#include "CPU.hpp"
 
 /** Cartridge Testing **/
 /** With Only 6502 Implemented **/
@@ -72,3 +73,27 @@ TEST(SytemBus, ReadAndWriteRAM) {
 
 /** CPU (Ricoh 6502) Testing **/
 /** CPU only, no apu, ppu. Mem space is only RAM and PRG-ROM **/
+TEST(CPU, SetAndGetStatusReg) {
+    CPU cpu;
+
+    cpu.setStatusReg(true, C);
+    cpu.setStatusReg(true, Z);
+    cpu.setStatusReg(true, I);
+    cpu.setStatusReg(true, D);
+    cpu.setStatusReg(true, B);
+    cpu.setStatusReg(true, U);
+    cpu.setStatusReg(true, V);
+    cpu.setStatusReg(true, N);
+
+    EXPECT_EQ(cpu.getStatusReg(C), true);
+    EXPECT_EQ(cpu.getStatusReg(Z), true);
+    EXPECT_EQ(cpu.getStatusReg(I), true);
+    EXPECT_EQ(cpu.getStatusReg(D), true);
+    EXPECT_EQ(cpu.getStatusReg(B), true);
+    EXPECT_EQ(cpu.getStatusReg(U), true);
+    EXPECT_EQ(cpu.getStatusReg(V), true);
+    EXPECT_EQ(cpu.getStatusReg(N), true);
+
+    cpu.setStatusReg(false, Z);
+    EXPECT_EQ(cpu.getStatusReg(Z), false);
+}
