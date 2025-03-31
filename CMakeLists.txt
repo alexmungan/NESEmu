@@ -28,7 +28,7 @@ set(TEST_FILES
 
 # Add an option to control whether to enable the tests
 # **** Must manually delete or update CMakeCache.txt to update this ****
-option(ENABLE_TESTS "Enable tests" OFF)
+option(ENABLE_TESTS "Enable tests" ON)
 
 # Download Google Test via FetchContent only if not already present
 if (NOT GTEST_DOWNLOAD)

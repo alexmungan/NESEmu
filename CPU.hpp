@@ -37,10 +37,10 @@ public:
     void setStatusReg(bool set, Flags flag);
     bool getStatusReg(Flags flag);
 
-    //TODO: opcode  //
-    //uint8_t workingData = 0x00; //
-    //TODO: fetchedOperand??? use 16 bit data type?
     uint8_t opcode = 0x00;
+    uint8_t operand_1byte = 0x00; //Holds operands of addressing modes: immediate, ... TODO
+    uint16_t operand_2byte = 0x0000; //Holds operand of addressing modes: TODO
+    uint8_t working_data = 0x00; //Holds the value that will be used by instruction after addressing mode stuff has been handles
     //Holds the number of cycles left to finish executing current instruction
     uint8_t instr_remaining_cycles = 0;
     uint8_t curr_micro_op = 0;
@@ -82,15 +82,40 @@ public:
     //Also sets instr_cycles_remaining and takes 1 cycle itself
     uint8_t fetch_opcode();
 
+    //Fetches the next byte at PRG-ROM to get the operand to the instruction
+    //This is used for addressing modes: TODO
+    uint8_t fetch_operand_1byte();
+
     //Wastes a cycle, used for instructions that do some operation on a cycle w/o memory access
     //therefore, they do not take a full cycle and need this function to decrement the instr_cycles_remaining counter
     uint8_t waste_cycle();
+
+    /** Addressing mode functions **/
+    //Immediate mode: the 1 byte fetched after the opcode is the working data
+    uint8_t set_working_data_immediate();
 
     /** Status flag related cycle based operations **/
     //Clears the carry flag of status register, takes 0 cycles
     uint8_t clear_carry();
 
-    //
+    //Clears the interrupt disable flag of status register, takes 0 cycles
+    uint8_t clear_interrupt_disable();
+
+    //Clears the overflow flag of status register, takes 0 cycles
+    uint8_t clear_overflow();
+
+    //Clears the decimal flag of status register, takes 0 cycles
+    //decimal mode is always disabled in NES' 2A03
+    uint8_t clear_decimal();
+
+    //Sets flags
+    uint8_t set_carry();
+    uint8_t set_interrupt_disable();
+    uint8_t set_decimal();
+
+    /** Bitwise **/
+    //Bitwise AND - takes 0 cycles
+    uint8_t AND();
 
 };
 

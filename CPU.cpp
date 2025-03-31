@@ -9,9 +9,52 @@ CPU::CPU() {
     //CLC
     opMatrix[0x18].pneumonic = "CLC";
     opMatrix[0x18].addressing_mode = IMP;
-    opMatrix[0x18].cycle_op_list.push_back(clear_carry);
-    opMatrix[0x18].cycle_op_list.push_back(waste_cycle);
+    opMatrix[0x18].cycle_op_list.push_back(&CPU::clear_carry);
+    opMatrix[0x18].cycle_op_list.push_back(&CPU::waste_cycle);
     opMatrix[0x18].cycles = 2;
+    //AND IMM
+    opMatrix[0x29].pneumonic = "AND";
+    opMatrix[0x29].addressing_mode = IMM;
+    opMatrix[0x29].cycle_op_list.push_back(&CPU::fetch_operand_1byte);
+    opMatrix[0x29].cycle_op_list.push_back(&CPU::set_working_data_immediate);
+    opMatrix[0x29].cycle_op_list.push_back(&CPU::AND);
+    opMatrix[0x29].cycles = 2;
+    //SEC
+    opMatrix[0x38].pneumonic = "SEC";
+    opMatrix[0x38].addressing_mode = IMP;
+    opMatrix[0x38].cycle_op_list.push_back(&CPU::set_carry);
+    opMatrix[0x38].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[0x38].cycles = 2;
+    //CLI
+    opMatrix[0x58].pneumonic = "CLI";
+    opMatrix[0x58].addressing_mode = IMP;
+    opMatrix[0x58].cycle_op_list.push_back(&CPU::clear_interrupt_disable);
+    opMatrix[0x58].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[0x58].cycles = 2;
+    //SEI
+    opMatrix[0x78].pneumonic = "SEI";
+    opMatrix[0x78].addressing_mode = IMP;
+    opMatrix[0x78].cycle_op_list.push_back(&CPU::set_interrupt_disable);
+    opMatrix[0x78].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[0x78].cycles = 2;
+    //CLV
+    opMatrix[0xB8].pneumonic = "CLV";
+    opMatrix[0xB8].addressing_mode = IMP;
+    opMatrix[0xB8].cycle_op_list.push_back(&CPU::clear_overflow);
+    opMatrix[0xB8].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[0xB8].cycles = 2;
+    //CLD
+    opMatrix[0xD8].pneumonic = "CLD";
+    opMatrix[0xD8].addressing_mode = IMP;
+    opMatrix[0xD8].cycle_op_list.push_back(&CPU::clear_decimal);
+    opMatrix[0xD8].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[0xD8].cycles = 2;
+    //SED
+    opMatrix[0xF8].pneumonic = "SED";
+    opMatrix[0xF8].addressing_mode = IMP;
+    opMatrix[0xF8].cycle_op_list.push_back(&CPU::set_decimal);
+    opMatrix[0xF8].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[0xF8].cycles = 2;
 
 }
 
@@ -67,12 +110,32 @@ size_t CPU::getListSize(uint8_t opcode) {
 uint8_t CPU::fetch_opcode() {
     opcode = read(PC);
     PC++;
+    operand_1byte = 0x00;
+    operand_2byte = 0x0000;
+    working_data = 0x00;
     instr_remaining_cycles = getCycles(opcode);
     curr_micro_op = 0;
     cycle_op_list_size = getListSize(opcode);
     instr_remaining_cycles--;
     return 1;
 }
+
+uint8_t CPU::fetch_operand_1byte() {
+    operand_1byte = read(PC);
+    PC++;
+    instr_remaining_cycles--;
+    curr_micro_op++;
+    return 1;
+}
+/****/
+
+uint8_t CPU::set_working_data_immediate() {
+    working_data = operand_1byte;
+    curr_micro_op++;
+    return 0;
+}
+
+/****/
 
 uint8_t CPU::waste_cycle() {
     instr_remaining_cycles--;
@@ -82,6 +145,59 @@ uint8_t CPU::waste_cycle() {
 
 uint8_t CPU::clear_carry() {
     setStatusReg(false, C);
+    curr_micro_op++;
+    return 0;
+}
+
+uint8_t CPU::clear_interrupt_disable() {
+    setStatusReg(false, I);
+    curr_micro_op++;
+    return 0;
+}
+
+uint8_t CPU::clear_overflow() {
+    setStatusReg(false, V);
+    curr_micro_op++;
+    return 0;
+}
+
+uint8_t CPU::clear_decimal() {
+    setStatusReg(false, D);
+    curr_micro_op++;
+    return 0;
+}
+
+uint8_t CPU::set_carry() {
+    setStatusReg(true, C);
+    curr_micro_op++;
+    return 0;
+}
+
+uint8_t CPU::set_interrupt_disable() {
+    setStatusReg(true, I);
+    curr_micro_op++;
+    return 0;
+}
+uint8_t CPU::set_decimal() {
+    setStatusReg(true, D);
+    curr_micro_op++;
+    return 0;
+}
+
+/****/
+uint8_t CPU::AND() {
+    A &= working_data;
+
+    if (A == 0)
+        setStatusReg(true, Z);
+    else
+        setStatusReg(false, Z);
+
+    if ((A & 0x80) != 0x00)
+        setStatusReg(true, N);
+    else
+        setStatusReg(false, N);
+
     curr_micro_op++;
     return 0;
 }
