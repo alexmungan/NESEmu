@@ -100,13 +100,20 @@ public:
     //Zero page: the 1 byte fetched after the opcode is an address into the zero page, the value at this address is the working adata
     uint8_t set_working_data_zero_page();
 
-    //Zero page X: add X to zero page address
+    //Zero page X: the 1 bytes feteched after the opcode is an address into zp, add X to zero page address and the value at this address is working data
     uint8_t set_working_data_zero_page_X();
 
+    //Absolute: the 2 bytes feteched after opcode form absolute address, the value found there is working data
     uint8_t set_working_data_absolute();
 
+    //Abs X: the 2 bytes feteched after opcode form abs address and then X is added, the value at the resulting addr is working data
+    //Note: the second function is only used if there is a page cross, requiring and extra cycle
     uint8_t set_working_data_absolute_X_1();
     uint8_t set_working_data_absolute_X_2();
+
+    //Abs Y: same as abs X but Y register is used
+    uint8_t set_working_data_absolute_Y_1();
+    uint8_t set_working_data_absolute_Y_2();
 
     /** Status flag related cycle based operations **/
     //Clears the carry flag of status register, takes 0 cycles

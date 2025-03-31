@@ -48,6 +48,15 @@ CPU::CPU() {
     opMatrix[0x38].cycle_op_list.push_back(&CPU::set_carry);
     opMatrix[0x38].cycle_op_list.push_back(&CPU::waste_cycle);
     opMatrix[0x38].cycles = 2;
+    //AND Absolute Y
+    opMatrix[0x39].pneumonic = "AND";
+    opMatrix[0x39].addressing_mode = ABSY;
+    opMatrix[0x39].cycle_op_list.push_back(&CPU::fetch_operand_2byte_LSB);
+    opMatrix[0x39].cycle_op_list.push_back(&CPU::fetch_operand_2byte_MSB);
+    opMatrix[0x39].cycle_op_list.push_back(&CPU::set_working_data_absolute_Y_1);
+    opMatrix[0x39].cycle_op_list.push_back(&CPU::set_working_data_absolute_Y_2);
+    opMatrix[0x39].cycle_op_list.push_back(&CPU::AND);
+    opMatrix[0x39].cycles = 5; //Normally takes 4 cycles, 5 if boundary is crossed
     //AND Absolute X
     opMatrix[0x3D].pneumonic = "AND";
     opMatrix[0x3D].addressing_mode = ABSX;
@@ -227,6 +236,26 @@ uint8_t CPU::set_working_data_absolute_X_2() {
     return 1;
 }
 
+uint8_t CPU::set_working_data_absolute_Y_1() {
+    uint16_t abs_addr = operand_2byte + Y;
+    if((operand_2byte & 0xFF00) != (abs_addr & 0xFF00)) {
+        //Page crossed! Extra cycle needed
+        operand_2byte = abs_addr;
+        return waste_cycle();
+    } else { //Page not crossed, skip the next micro_op
+        working_data = read(abs_addr);
+        instr_remaining_cycles -= 2; //We have to get rid of an extra cycle b/c we assumed instruction would take 5 cycles, but only takes 4
+        curr_micro_op += 2; //Skip over next micro op
+        return 1;
+    }
+}
+
+uint8_t CPU::set_working_data_absolute_Y_2() {
+    working_data = read(operand_2byte); //Note: operand_2byte will have had X already added to it in set_working_data_absolute_X_1()
+    instr_remaining_cycles--;
+    curr_micro_op++;
+    return 1;
+}
 
 /****/
 
