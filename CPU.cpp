@@ -9,8 +9,8 @@ CPU::CPU() {
     //CLC
     opMatrix[0x18].pneumonic = "CLC";
     opMatrix[0x18].addressing_mode = IMP;
-    opMatrix[0x18].cycle_op_list.push_back(waste_cycle);
     opMatrix[0x18].cycle_op_list.push_back(clear_carry);
+    opMatrix[0x18].cycle_op_list.push_back(waste_cycle);
     opMatrix[0x18].cycles = 2;
 
 }
@@ -51,11 +51,15 @@ AddressingMode CPU::getAddressingMode(uint8_t opcode) {
 }
 
 CPU::cycle_operation CPU::getNextFunctionPtr(uint8_t opcode) {
-    return opMatrix[opcode].cycle_op_list[(instr_remaining_cycles - 1)];
+    return opMatrix[opcode].cycle_op_list[curr_micro_op];
 }
 
 uint8_t CPU::getCycles(uint8_t opcode) {
     return opMatrix[opcode].cycles;
+}
+
+size_t CPU::getListSize(uint8_t opcode) {
+    return opMatrix[opcode].cycle_op_list.size();
 }
 
 /****/
@@ -64,17 +68,21 @@ uint8_t CPU::fetch_opcode() {
     opcode = read(PC);
     PC++;
     instr_remaining_cycles = getCycles(opcode);
+    curr_micro_op = 0;
+    cycle_op_list_size = getListSize(opcode);
     instr_remaining_cycles--;
     return 1;
 }
 
 uint8_t CPU::waste_cycle() {
     instr_remaining_cycles--;
+    curr_micro_op++;
     return 1;
 }
 
 uint8_t CPU::clear_carry() {
     setStatusReg(false, C);
+    curr_micro_op++;
     return 0;
 }
 

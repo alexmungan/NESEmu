@@ -40,9 +40,11 @@ public:
     //TODO: opcode  //
     //uint8_t workingData = 0x00; //
     //TODO: fetchedOperand??? use 16 bit data type?
-    uint8_t opcode;
+    uint8_t opcode = 0x00;
     //Holds the number of cycles left to finish executing current instruction
     uint8_t instr_remaining_cycles = 0;
+    uint8_t curr_micro_op = 0;
+    size_t cycle_op_list_size = 0;
 
 private:
     /** BUS connection **/
@@ -70,6 +72,7 @@ public:
     AddressingMode getAddressingMode(uint8_t opcode);
     cycle_operation getNextFunctionPtr(uint8_t opcode); //Gives the function Ptr to the next cycle-based operation to execute for the current instruction
     uint8_t getCycles(uint8_t opcode);
+    size_t getListSize(uint8_t opcode); //Get size micro op list
 
     /**** CPU Cycle Based Operations ****/
     /**   All functions should return void and take no params **/
