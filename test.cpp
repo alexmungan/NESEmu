@@ -329,8 +329,8 @@ TEST(CPU, SET) {
     ASSERT_EQ(cpu.getStatusReg(I), 1);
 }
 
-//Test AND instruction, result is not zero and is negative
-TEST(CPU, AND_NZ_P) {
+//Test AND IMM instruction, result is not zero and is negative
+TEST(CPU, AND_IMM_NZ_N) {
     CPU cpu;
     SystemBus systemBus;
     Cartridge cartridge;
@@ -375,7 +375,7 @@ TEST(CPU, AND_NZ_P) {
 }
 
 //Test AND instruction, result is zero and is positive
-TEST(CPU, AND_Z_P) {
+TEST(CPU, AND_IMM_Z_P) {
     CPU cpu;
     SystemBus systemBus;
     Cartridge cartridge;
@@ -419,5 +419,328 @@ TEST(CPU, AND_Z_P) {
     ASSERT_EQ(cpu.getStatusReg(N), false);
 }
 
+//Test AND zero page instruction, result is not zero and is negative
+TEST(CPU, AND_ZP_NZ_N) {
+    CPU cpu;
+    SystemBus systemBus;
+    Cartridge cartridge;
+    std::string rom_path = "../ROMs/test_AND_ZP1.nes";
+    cartridge.loadROM(rom_path);
+    systemBus.connect2cartridge(&cartridge);
+    cpu.connect2Bus(&systemBus);
+
+    //Initialize mock test data
+    cpu.A = 0x88;
+    cpu.write(0x04, 0xF0);
+
+    //fetch_opcode()
+    cpu.PC = 0x8000;
+    ASSERT_EQ(cpu.PC, 0x8000);
+    ASSERT_EQ(cpu.fetch_opcode(), 1);
+    ASSERT_EQ(cpu.opcode, 0x25);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 2);
+    ASSERT_EQ(cpu.PC, 0x8001);
+
+    //fetch_operand_1byte()
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    auto function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.PC, 0x8002);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
+    ASSERT_EQ(cpu.operand_1byte, 0x04);
+
+    //set_working_data_zero_page()
+    ASSERT_EQ(cpu.curr_micro_op, 1);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
+    ASSERT_EQ(cpu.working_data, 0xF0);
+
+    //AND()
+    ASSERT_EQ(cpu.curr_micro_op, 2);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 0);
+    ASSERT_EQ(cpu.A, 0x80);
+
+    ASSERT_EQ(cpu.getStatusReg(Z), false);
+    ASSERT_EQ(cpu.getStatusReg(N), true);
+}
+
+//Test AND zero page instruction, result is zero and is positive
+TEST(CPU, AND_ZP_Z_P) {
+    CPU cpu;
+    SystemBus systemBus;
+    Cartridge cartridge;
+    std::string rom_path = "../ROMs/test_AND_ZP1.nes";
+    cartridge.loadROM(rom_path);
+    systemBus.connect2cartridge(&cartridge);
+    cpu.connect2Bus(&systemBus);
+
+    //Initialize mock test data
+    cpu.A = 0x88;
+    cpu.write(0x04, 0x22);
+
+    //fetch_opcode()
+    cpu.PC = 0x8000;
+    ASSERT_EQ(cpu.PC, 0x8000);
+    ASSERT_EQ(cpu.fetch_opcode(), 1);
+    ASSERT_EQ(cpu.opcode, 0x25);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 2);
+    ASSERT_EQ(cpu.PC, 0x8001);
+
+    //fetch_operand_1byte()
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    auto function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.PC, 0x8002);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
+    ASSERT_EQ(cpu.operand_1byte, 0x04);
+
+    //set_working_data_zero_page()
+    ASSERT_EQ(cpu.curr_micro_op, 1);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
+    ASSERT_EQ(cpu.working_data, 0x22);
+
+    //AND()
+    ASSERT_EQ(cpu.curr_micro_op, 2);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 0);
+    ASSERT_EQ(cpu.A, 0x00);
+
+    ASSERT_EQ(cpu.getStatusReg(Z), true);
+    ASSERT_EQ(cpu.getStatusReg(N), false);
+}
+
+//Test AND zero page x where result is non zero and negative
+TEST(CPU, AND_ZP_X_NZ_N) {
+    CPU cpu;
+    SystemBus systemBus;
+    Cartridge cartridge;
+    std::string rom_path = "../ROMs/test_AND_ZPX1.nes";
+    cartridge.loadROM(rom_path);
+    systemBus.connect2cartridge(&cartridge);
+    cpu.connect2Bus(&systemBus);
+
+    //Initialize mock test data
+    cpu.A = 0x88;
+    cpu.X = 0x04;
+    cpu.write(0x04 + 0x04, 0xF0);
+
+    //fetch_opcode()
+    cpu.PC = 0x8000;
+    ASSERT_EQ(cpu.PC, 0x8000);
+    ASSERT_EQ(cpu.fetch_opcode(), 1);
+    ASSERT_EQ(cpu.opcode, 0x35);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 3);
+    ASSERT_EQ(cpu.PC, 0x8001);
+
+    //fetch_operand_1byte()
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    auto function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.PC, 0x8002);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 2);
+    ASSERT_EQ(cpu.operand_1byte, 0x04);
+
+    //set_working_data_zero_page_X()
+    ASSERT_EQ(cpu.curr_micro_op, 1);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
+    ASSERT_EQ(cpu.working_data, 0xF0);
+
+    //AND()
+    ASSERT_EQ(cpu.curr_micro_op, 2);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 0);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
+    ASSERT_EQ(cpu.A, 0x80);
+
+    ASSERT_EQ(cpu.getStatusReg(Z), false);
+    ASSERT_EQ(cpu.getStatusReg(N), true);
+
+    //waste_cycle()
+    ASSERT_EQ(cpu.curr_micro_op, 3);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
+}
+
+//AND with absolute addressing
+TEST(AND, ABS) {
+    CPU cpu;
+    SystemBus systemBus;
+    Cartridge cartridge;
+    std::string rom_path = "../ROMs/test_AND_ABS.nes";
+    cartridge.loadROM(rom_path);
+    systemBus.connect2cartridge(&cartridge);
+    cpu.connect2Bus(&systemBus);
+
+    //Initialize mock test data
+    cpu.A = 0x88;
+    cpu.write(0x0123, 0xF0);
+
+    //fetch_opcode()
+    cpu.PC = 0x8000;
+    ASSERT_EQ(cpu.PC, 0x8000);
+    ASSERT_EQ(cpu.fetch_opcode(), 1);
+    ASSERT_EQ(cpu.opcode, 0x2D);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 3);
+    ASSERT_EQ(cpu.PC, 0x8001);
+
+    //fetch_operand_2byte_LSB()
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    auto function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.PC, 0x8002);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 2);
+    ASSERT_EQ(cpu.operand_2byte, 0x23);
+
+    //fetch_operand_2byte_MSB()
+    ASSERT_EQ(cpu.curr_micro_op, 1);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.PC, 0x8003);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
+    ASSERT_EQ(cpu.operand_2byte, 0x0123);
+
+    //set_working_data_absolute()
+    ASSERT_EQ(cpu.curr_micro_op, 2);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
+    ASSERT_EQ(cpu.working_data, 0xF0);
+
+    //AND()
+    ASSERT_EQ(cpu.curr_micro_op, 3);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 0);
+    ASSERT_EQ(cpu.A, 0x80);
+
+    ASSERT_EQ(cpu.getStatusReg(Z), false);
+    ASSERT_EQ(cpu.getStatusReg(N), true);
+}
+
+//AND Abs X WITH page crossing 0x00FF + 0x01 = 0x0100
+TEST(AND, ABSX_cross) {
+    CPU cpu;
+    SystemBus systemBus;
+    Cartridge cartridge;
+    std::string rom_path = "../ROMs/test_AND_ABSX_cross.nes";
+    cartridge.loadROM(rom_path);
+    systemBus.connect2cartridge(&cartridge);
+    cpu.connect2Bus(&systemBus);
+
+    //Initialize mock test data
+    cpu.A = 0x88;
+    cpu.X = 0x01;
+    cpu.write(0x0100, 0xF0);
+
+    //fetch_opcode()
+    cpu.PC = 0x8000;
+    ASSERT_EQ(cpu.PC, 0x8000);
+    ASSERT_EQ(cpu.fetch_opcode(), 1);
+    ASSERT_EQ(cpu.opcode, 0x3D);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 4);
+    ASSERT_EQ(cpu.PC, 0x8001);
+
+    //fetch_operand_2byte_LSB()
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    auto function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.PC, 0x8002);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 3);
+    ASSERT_EQ(cpu.operand_2byte, 0xFF);
+
+    //fetch_operand_2byte_MSB()
+    ASSERT_EQ(cpu.curr_micro_op, 1);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.PC, 0x8003);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 2);
+    ASSERT_EQ(cpu.operand_2byte, 0x00FF);
+
+    //set_working_data_absolute_X_1
+    ASSERT_EQ(cpu.curr_micro_op, 2);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
+    ASSERT_EQ(cpu.operand_2byte, 0x0100); //already set
+
+    //set_working_data_absolute_X_2
+    ASSERT_EQ(cpu.curr_micro_op, 3);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
+    ASSERT_EQ(cpu.working_data, 0xF0);
+
+    //AND()
+    ASSERT_EQ(cpu.curr_micro_op, 4);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 0);
+    ASSERT_EQ(cpu.A, 0x80);
+
+    ASSERT_EQ(cpu.getStatusReg(Z), false);
+    ASSERT_EQ(cpu.getStatusReg(N), true);
+}
+
+//AND Abs X (NO page crossing) 0x0004 + 0x04 = 0x0008
+TEST(AND, ABSX) {
+    CPU cpu;
+    SystemBus systemBus;
+    Cartridge cartridge;
+    std::string rom_path = "../ROMs/test_AND_ABSX.nes";
+    cartridge.loadROM(rom_path);
+    systemBus.connect2cartridge(&cartridge);
+    cpu.connect2Bus(&systemBus);
+
+    //Initialize mock test data
+    cpu.A = 0x88;
+    cpu.X = 0x04;
+    cpu.write(0x0008, 0xF0);
+
+    //fetch_opcode()
+    cpu.PC = 0x8000;
+    ASSERT_EQ(cpu.PC, 0x8000);
+    ASSERT_EQ(cpu.fetch_opcode(), 1);
+    ASSERT_EQ(cpu.opcode, 0x3D);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 4);
+    ASSERT_EQ(cpu.PC, 0x8001);
+
+    //fetch_operand_2byte_LSB()
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    auto function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.PC, 0x8002);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 3);
+    ASSERT_EQ(cpu.operand_2byte, 0x0004);
+
+    //fetch_operand_2byte_MSB()
+    ASSERT_EQ(cpu.curr_micro_op, 1);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.PC, 0x8003);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 2);
+    ASSERT_EQ(cpu.operand_2byte, 0x0004);
+
+    //set_working_data_absolute_X_1
+    ASSERT_EQ(cpu.curr_micro_op, 2);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
+    //internally, addr_abs set to 0x0008
+    ASSERT_EQ(cpu.working_data, 0xF0);
+
+    //AND()
+    ASSERT_EQ(cpu.curr_micro_op, 4);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 0);
+    ASSERT_EQ(cpu.A, 0x80);
+
+    ASSERT_EQ(cpu.getStatusReg(Z), false);
+    ASSERT_EQ(cpu.getStatusReg(N), true);
+}
 
 

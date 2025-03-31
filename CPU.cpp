@@ -12,6 +12,13 @@ CPU::CPU() {
     opMatrix[0x18].cycle_op_list.push_back(&CPU::clear_carry);
     opMatrix[0x18].cycle_op_list.push_back(&CPU::waste_cycle);
     opMatrix[0x18].cycles = 2;
+    //AND Zero Page
+    opMatrix[0x25].pneumonic = "AND";
+    opMatrix[0x25].addressing_mode = ZP;
+    opMatrix[0x25].cycle_op_list.push_back(&CPU::fetch_operand_1byte);
+    opMatrix[0x25].cycle_op_list.push_back(&CPU::set_working_data_zero_page);
+    opMatrix[0x25].cycle_op_list.push_back(&CPU::AND);
+    opMatrix[0x25].cycles = 3;
     //AND IMM
     opMatrix[0x29].pneumonic = "AND";
     opMatrix[0x29].addressing_mode = IMM;
@@ -19,12 +26,37 @@ CPU::CPU() {
     opMatrix[0x29].cycle_op_list.push_back(&CPU::set_working_data_immediate);
     opMatrix[0x29].cycle_op_list.push_back(&CPU::AND);
     opMatrix[0x29].cycles = 2;
+    //AND Absolute
+    opMatrix[0x2D].pneumonic = "AND";
+    opMatrix[0x2D].addressing_mode = ABS;
+    opMatrix[0x2D].cycle_op_list.push_back(&CPU::fetch_operand_2byte_LSB);
+    opMatrix[0x2D].cycle_op_list.push_back(&CPU::fetch_operand_2byte_MSB);
+    opMatrix[0x2D].cycle_op_list.push_back(&CPU::set_working_data_absolute);
+    opMatrix[0x2D].cycle_op_list.push_back(&CPU::AND);
+    opMatrix[0x2D].cycles = 4;
+    //AND ZP X
+    opMatrix[0x35].pneumonic = "AND";
+    opMatrix[0x35].addressing_mode = ZPX;
+    opMatrix[0x35].cycle_op_list.push_back(&CPU::fetch_operand_1byte);
+    opMatrix[0x35].cycle_op_list.push_back(&CPU::set_working_data_zero_page_X);
+    opMatrix[0x35].cycle_op_list.push_back(&CPU::AND);
+    opMatrix[0x35].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[0x35].cycles = 4;
     //SEC
     opMatrix[0x38].pneumonic = "SEC";
     opMatrix[0x38].addressing_mode = IMP;
     opMatrix[0x38].cycle_op_list.push_back(&CPU::set_carry);
     opMatrix[0x38].cycle_op_list.push_back(&CPU::waste_cycle);
     opMatrix[0x38].cycles = 2;
+    //AND Absolute X
+    opMatrix[0x3D].pneumonic = "AND";
+    opMatrix[0x3D].addressing_mode = ABSX;
+    opMatrix[0x3D].cycle_op_list.push_back(&CPU::fetch_operand_2byte_LSB);
+    opMatrix[0x3D].cycle_op_list.push_back(&CPU::fetch_operand_2byte_MSB);
+    opMatrix[0x3D].cycle_op_list.push_back(&CPU::set_working_data_absolute_X_1);
+    opMatrix[0x3D].cycle_op_list.push_back(&CPU::set_working_data_absolute_X_2);
+    opMatrix[0x3D].cycle_op_list.push_back(&CPU::AND);
+    opMatrix[0x3D].cycles = 5; //Normally takes 4 cycles, 5 if boundary is crossed
     //CLI
     opMatrix[0x58].pneumonic = "CLI";
     opMatrix[0x58].addressing_mode = IMP;
@@ -127,6 +159,22 @@ uint8_t CPU::fetch_operand_1byte() {
     curr_micro_op++;
     return 1;
 }
+
+uint8_t CPU::fetch_operand_2byte_LSB() {
+    operand_2byte = read(PC);
+    PC++;
+    instr_remaining_cycles--;
+    curr_micro_op++;
+    return 1;
+}
+
+uint8_t CPU::fetch_operand_2byte_MSB() {
+    operand_2byte += (static_cast<uint16_t>(read(PC)) << static_cast<uint16_t>(8));
+    PC++;
+    instr_remaining_cycles--;
+    curr_micro_op++;
+    return 1;
+}
 /****/
 
 uint8_t CPU::set_working_data_immediate() {
@@ -134,6 +182,51 @@ uint8_t CPU::set_working_data_immediate() {
     curr_micro_op++;
     return 0;
 }
+
+uint8_t CPU::set_working_data_zero_page() {
+    working_data = read(operand_1byte);
+    instr_remaining_cycles--;
+    curr_micro_op++;
+    return 1;
+}
+
+uint8_t CPU::set_working_data_zero_page_X() {
+    uint8_t zp_addr = operand_1byte + X;
+    working_data = read(zp_addr);
+    instr_remaining_cycles--;
+    curr_micro_op++;
+    return 1;
+}
+
+uint8_t CPU::set_working_data_absolute() {
+    working_data = read(operand_2byte);
+    instr_remaining_cycles--;
+    curr_micro_op++;
+    return 1;
+}
+
+uint8_t CPU::set_working_data_absolute_X_1() {
+    uint16_t abs_addr = operand_2byte + X;
+    if((operand_2byte & 0xFF00) != (abs_addr & 0xFF00)) {
+        //Page crossed! Extra cycle needed
+        operand_2byte = abs_addr;
+        return waste_cycle();
+    } else { //Page not crossed, skip the next micro_op
+        working_data = read(abs_addr);
+        instr_remaining_cycles -= 2; //We have to get rid of an extra cycle b/c we assumed instruction would take 5 cycles, but only takes 4
+        curr_micro_op += 2; //Skip over next micro op
+        return 1;
+    }
+
+}
+
+uint8_t CPU::set_working_data_absolute_X_2() {
+    working_data = read(operand_2byte); //Note: operand_2byte will have had X already added to it in set_working_data_absolute_X_1()
+    instr_remaining_cycles--;
+    curr_micro_op++;
+    return 1;
+}
+
 
 /****/
 

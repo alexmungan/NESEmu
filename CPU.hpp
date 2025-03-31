@@ -39,7 +39,7 @@ public:
 
     uint8_t opcode = 0x00;
     uint8_t operand_1byte = 0x00; //Holds operands of addressing modes: immediate, ... TODO
-    uint16_t operand_2byte = 0x0000; //Holds operand of addressing modes: TODO
+    uint16_t operand_2byte = 0x0000; //Holds operand of addressing modes: TODO, . Also used to store computed addresses
     uint8_t working_data = 0x00; //Holds the value that will be used by instruction after addressing mode stuff has been handles
     //Holds the number of cycles left to finish executing current instruction
     uint8_t instr_remaining_cycles = 0;
@@ -83,8 +83,11 @@ public:
     uint8_t fetch_opcode();
 
     //Fetches the next byte at PRG-ROM to get the operand to the instruction
-    //This is used for addressing modes: TODO
+    //This is used for addressing modes: IMM, TODO
     uint8_t fetch_operand_1byte();
+    //This is used for addressing modes: absolute, TODO
+    uint8_t fetch_operand_2byte_LSB();
+    uint8_t fetch_operand_2byte_MSB();
 
     //Wastes a cycle, used for instructions that do some operation on a cycle w/o memory access
     //therefore, they do not take a full cycle and need this function to decrement the instr_cycles_remaining counter
@@ -93,6 +96,17 @@ public:
     /** Addressing mode functions **/
     //Immediate mode: the 1 byte fetched after the opcode is the working data
     uint8_t set_working_data_immediate();
+
+    //Zero page: the 1 byte fetched after the opcode is an address into the zero page, the value at this address is the working adata
+    uint8_t set_working_data_zero_page();
+
+    //Zero page X: add X to zero page address
+    uint8_t set_working_data_zero_page_X();
+
+    uint8_t set_working_data_absolute();
+
+    uint8_t set_working_data_absolute_X_1();
+    uint8_t set_working_data_absolute_X_2();
 
     /** Status flag related cycle based operations **/
     //Clears the carry flag of status register, takes 0 cycles
