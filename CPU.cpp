@@ -98,6 +98,28 @@ CPU::CPU() {
     opMatrix[0x78].cycle_op_list.push_back(&CPU::set_interrupt_disable);
     opMatrix[0x78].cycle_op_list.push_back(&CPU::waste_cycle);
     opMatrix[0x78].cycles = 2;
+    //STA ZP
+    opMatrix[0x85].pneumonic = "STA";
+    opMatrix[0x85].addressing_mode = ZP;
+    opMatrix[0x85].cycle_op_list.push_back(&CPU::fetch_operand_1byte);
+    opMatrix[0x85].cycle_op_list.push_back(&CPU::set_working_data_zero_page);
+    opMatrix[0x85].cycle_op_list.push_back(&CPU::copy_operand1to2);
+    opMatrix[0x85].cycle_op_list.push_back(&CPU::store_A);
+    opMatrix[0x85].cycles = 3;
+    //LDA IMM
+    opMatrix[0xA0].pneumonic = "LDY";
+    opMatrix[0xA0].addressing_mode = IMM;
+    opMatrix[0xA0].cycle_op_list.push_back(&CPU::fetch_operand_1byte);
+    opMatrix[0xA0].cycle_op_list.push_back(&CPU::set_working_data_immediate);
+    opMatrix[0xA0].cycle_op_list.push_back(&CPU::load_Y);
+    opMatrix[0xA0].cycles = 2;
+    //LDY IMM
+    opMatrix[0xA9].pneumonic = "LDA";
+    opMatrix[0xA9].addressing_mode = IMM;
+    opMatrix[0xA9].cycle_op_list.push_back(&CPU::fetch_operand_1byte);
+    opMatrix[0xA9].cycle_op_list.push_back(&CPU::set_working_data_immediate);
+    opMatrix[0xA9].cycle_op_list.push_back(&CPU::load_A);
+    opMatrix[0xA9].cycles = 2;
     //CLV
     opMatrix[0xB8].pneumonic = "CLV";
     opMatrix[0xB8].addressing_mode = IMP;
@@ -336,6 +358,11 @@ uint8_t CPU::set_working_data_indirect_indexed_4() {
     return 1;
 }
 
+uint8_t CPU::copy_operand1to2() {
+    operand_2byte = operand_1byte;
+    return 0;
+}
+
 /****/
 
 uint8_t CPU::waste_cycle() {
@@ -343,6 +370,27 @@ uint8_t CPU::waste_cycle() {
     curr_micro_op++;
     return 1;
 }
+/****/
+
+uint8_t CPU::load_A() {
+    A = working_data;
+    curr_micro_op++;
+    return 0;
+}
+
+uint8_t CPU::load_Y() {
+    Y = working_data;
+    curr_micro_op++;
+    return 0;
+}
+
+uint8_t CPU::store_A() {
+    write(operand_2byte, A);
+    curr_micro_op++;
+    return 1;
+}
+
+/****/
 
 uint8_t CPU::clear_carry() {
     setStatusReg(false, C);

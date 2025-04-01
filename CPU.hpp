@@ -137,6 +137,14 @@ public:
     //Access data from final address
     uint8_t set_working_data_indirect_indexed_4();
 
+    //
+    uint8_t copy_operand1to2();
+
+    /** Data Movement **/
+    uint8_t load_A();
+    uint8_t load_Y();
+    uint8_t store_A();
+
     /** Status flag related cycle based operations **/
     //Clears the carry flag of status register, takes 0 cycles
     uint8_t clear_carry();
