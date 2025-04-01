@@ -115,6 +115,28 @@ public:
     uint8_t set_working_data_absolute_Y_1();
     uint8_t set_working_data_absolute_Y_2();
 
+    //Indexed indirect: the 1 byte fetched with X added to it is the address to the
+    //LSB of another address, the MSB is at the next address.
+    //Both combined form the address of the working_data
+    //Fetch LSB
+    uint8_t set_working_data_indexed_indirect_1();
+    //Fetch MSB to form full address
+    uint8_t set_working_data_indexed_indirect_2();
+    //Get data from full address
+    uint8_t set_working_data_indexed_indirect_3();
+
+    //Indirect Indexed: the 1 byte fetched is used to get LSB
+    //MSB is at the next address, combine both to get full address
+    //Add Y to address, then fetch data from final computed address
+    //Get LSB
+    uint8_t set_working_data_indirect_indexed_1();
+    //Get MSB, combine LSB and MSB
+    uint8_t set_working_data_indirect_indexed_2();
+    //Add Y to address and access data, if adding causes page boundary to be crossed, access happen in part 4
+    uint8_t set_working_data_indirect_indexed_3();
+    //Access data from final address
+    uint8_t set_working_data_indirect_indexed_4();
+
     /** Status flag related cycle based operations **/
     //Clears the carry flag of status register, takes 0 cycles
     uint8_t clear_carry();

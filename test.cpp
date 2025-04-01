@@ -743,6 +743,135 @@ TEST(AND, ABSX) {
     ASSERT_EQ(cpu.getStatusReg(N), true);
 }
 
+//Indexed Indirect
+TEST(AND, INDX) {
+    CPU cpu;
+    SystemBus systemBus;
+    Cartridge cartridge;
+    std::string rom_path = "../ROMs/test_AND_INDX.nes";
+    cartridge.loadROM(rom_path);
+    systemBus.connect2cartridge(&cartridge);
+    cpu.connect2Bus(&systemBus);
 
+    //Initialize mock test data
+    cpu.A = 0x88;
+    cpu.X = 0x04;
+    cpu.write(0x0008, 0x0A); //LSB
+    cpu.write(0x0009, 0x00); //MSB
+    cpu.write(0x000A, 0xF0);
 
+    //fetch_opcode()
+    cpu.PC = 0x8000;
+    ASSERT_EQ(cpu.fetch_opcode(), 1);
+    ASSERT_EQ(cpu.opcode, 0x21);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 5);
+
+    //fetch_operand_1byte()
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    auto function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 4);
+    ASSERT_EQ(cpu.operand_1byte, 0x04);
+
+    //set_working_data_indexed_indirect_1()
+    ASSERT_EQ(cpu.curr_micro_op, 1);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 3);
+    ASSERT_EQ(cpu.operand_1byte, 0x08);
+    ASSERT_EQ(cpu.operand_2byte, 0x000A);
+
+    //set_working_data_indexed_indirect_2()
+    ASSERT_EQ(cpu.curr_micro_op, 2);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 2);
+    ASSERT_EQ(cpu.operand_2byte, 0x000A);
+
+    //set_working_data_indexed_indirect_3()
+    ASSERT_EQ(cpu.curr_micro_op, 3);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
+    ASSERT_EQ(cpu.working_data, 0xF0);
+
+    //AND
+    ASSERT_EQ(cpu.curr_micro_op, 4);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 0);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
+    ASSERT_EQ(cpu.A, 0x80);
+
+    ASSERT_EQ(cpu.getStatusReg(Z), false);
+    ASSERT_EQ(cpu.getStatusReg(N), true);
+
+    //waste_cycle
+    ASSERT_EQ(cpu.curr_micro_op, 5);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
+}
+
+//Indirect Indexed page not crossed
+TEST(AND, INDY) {
+    CPU cpu;
+    SystemBus systemBus;
+    Cartridge cartridge;
+    std::string rom_path = "../ROMs/test_AND_INDY.nes";
+    cartridge.loadROM(rom_path);
+    systemBus.connect2cartridge(&cartridge);
+    cpu.connect2Bus(&systemBus);
+
+    //Initialize mock test data
+    cpu.A = 0x88;
+    cpu.Y = 0x04;
+    cpu.write(0x0004, 0x0A); //LSB
+    cpu.write(0x0005, 0x00); //MSB
+    cpu.write(0x000E, 0xF0);
+
+    //fetch_opcode()
+    cpu.PC = 0x8000;
+    ASSERT_EQ(cpu.fetch_opcode(), 1);
+    ASSERT_EQ(cpu.opcode, 0x31);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 5);
+
+    //fetch_operand_1byte()
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    auto function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 4);
+    ASSERT_EQ(cpu.operand_1byte, 0x04);
+
+    //set_working_data_indirect_indexed_1()
+    ASSERT_EQ(cpu.curr_micro_op, 1);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 3);
+    ASSERT_EQ(cpu.operand_2byte, 0x000A);
+
+    //set_working_data_indirect_indexed_2()
+    ASSERT_EQ(cpu.curr_micro_op, 2);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 2);
+    ASSERT_EQ(cpu.operand_2byte, 0x000A);
+
+    //set_working_data_indirect_3_indexed()
+    ASSERT_EQ(cpu.curr_micro_op, 3);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 1);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
+    ASSERT_EQ(cpu.working_data, 0xF0);
+
+    //AND
+    ASSERT_EQ(cpu.curr_micro_op, 5);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    ASSERT_EQ((cpu.*function)(), 0);
+    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
+    ASSERT_EQ(cpu.A, 0x80);
+
+    ASSERT_EQ(cpu.getStatusReg(Z), false);
+    ASSERT_EQ(cpu.getStatusReg(N), true);
+
+}
 

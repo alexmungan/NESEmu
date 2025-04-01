@@ -12,6 +12,16 @@ CPU::CPU() {
     opMatrix[0x18].cycle_op_list.push_back(&CPU::clear_carry);
     opMatrix[0x18].cycle_op_list.push_back(&CPU::waste_cycle);
     opMatrix[0x18].cycles = 2;
+    //AND indexed indirect
+    opMatrix[0x21].pneumonic = "AND";
+    opMatrix[0x21].addressing_mode = INDX;
+    opMatrix[0x21].cycle_op_list.push_back(&CPU::fetch_operand_1byte);
+    opMatrix[0x21].cycle_op_list.push_back(&CPU::set_working_data_indexed_indirect_1);
+    opMatrix[0x21].cycle_op_list.push_back(&CPU::set_working_data_indexed_indirect_2);
+    opMatrix[0x21].cycle_op_list.push_back(&CPU::set_working_data_indexed_indirect_3);
+    opMatrix[0x21].cycle_op_list.push_back(&CPU::AND);
+    opMatrix[0x21].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[0x21].cycles = 6;
     //AND Zero Page
     opMatrix[0x25].pneumonic = "AND";
     opMatrix[0x25].addressing_mode = ZP;
@@ -34,6 +44,16 @@ CPU::CPU() {
     opMatrix[0x2D].cycle_op_list.push_back(&CPU::set_working_data_absolute);
     opMatrix[0x2D].cycle_op_list.push_back(&CPU::AND);
     opMatrix[0x2D].cycles = 4;
+    //AND indirect indexed
+    opMatrix[0x31].pneumonic = "AND";
+    opMatrix[0x31].addressing_mode = INDY;
+    opMatrix[0x31].cycle_op_list.push_back(&CPU::fetch_operand_1byte);
+    opMatrix[0x31].cycle_op_list.push_back(&CPU::set_working_data_indirect_indexed_1);
+    opMatrix[0x31].cycle_op_list.push_back(&CPU::set_working_data_indirect_indexed_2);
+    opMatrix[0x31].cycle_op_list.push_back(&CPU::set_working_data_indirect_indexed_3);
+    opMatrix[0x31].cycle_op_list.push_back(&CPU::set_working_data_indirect_indexed_4);
+    opMatrix[0x31].cycle_op_list.push_back(&CPU::AND);
+    opMatrix[0x31].cycles = 6;
     //AND ZP X
     opMatrix[0x35].pneumonic = "AND";
     opMatrix[0x35].addressing_mode = ZPX;
@@ -251,7 +271,66 @@ uint8_t CPU::set_working_data_absolute_Y_1() {
 }
 
 uint8_t CPU::set_working_data_absolute_Y_2() {
-    working_data = read(operand_2byte); //Note: operand_2byte will have had X already added to it in set_working_data_absolute_X_1()
+    working_data = read(operand_2byte); //Note: operand_2byte will have had Y already added to it in set_working_data_absolute_Y_1()
+    instr_remaining_cycles--;
+    curr_micro_op++;
+    return 1;
+}
+
+uint8_t CPU::set_working_data_indexed_indirect_1() {
+    operand_1byte += X; //uint8_t wraps mod 256
+    operand_2byte = read(operand_1byte); //LSB
+    instr_remaining_cycles--;
+    curr_micro_op++;
+    return 1;
+}
+
+uint8_t CPU::set_working_data_indexed_indirect_2() {
+    uint8_t msb_addr = operand_1byte + 1; //ensure 8 bit wrapping mod 256
+    operand_2byte += (read(msb_addr) << 8);
+    instr_remaining_cycles--;
+    curr_micro_op++;
+    return 1;
+}
+
+uint8_t CPU::set_working_data_indexed_indirect_3() {
+    working_data = read(operand_2byte);
+    instr_remaining_cycles--;
+    curr_micro_op++;
+    return 1;
+}
+
+uint8_t CPU::set_working_data_indirect_indexed_1() {
+    operand_2byte = read(operand_1byte);
+    instr_remaining_cycles--;
+    curr_micro_op++;
+    return 1;
+}
+
+uint8_t CPU::set_working_data_indirect_indexed_2() {
+    uint8_t msb_addr = operand_1byte + 1; //ensure 8 bit wrapping mod 256
+    operand_2byte += (read(msb_addr) << 8);
+    instr_remaining_cycles--;
+    curr_micro_op++;
+    return 1;
+}
+
+uint8_t CPU::set_working_data_indirect_indexed_3() {
+    uint16_t final_addr = operand_2byte + Y;
+    if((operand_2byte & 0xFF00) != (final_addr & 0xFF00)) {
+        //Page crossed! Extra cycle needed
+        operand_2byte = final_addr;
+        return waste_cycle();
+    } else { //Page not crossed, skip the next micro_op
+        working_data = read(final_addr);
+        instr_remaining_cycles -= 2; //We have to get rid of an extra cycle b/c we skip an operation that takes 1 cycle that we assummed would happen
+        curr_micro_op += 2; //Skip over next micro op
+        return 1;
+    }
+}
+
+uint8_t CPU::set_working_data_indirect_indexed_4() {
+    working_data = read(operand_2byte); //Note: operand_2byte will have had Y already added to it in set_working_data_indirect_indexed_3()
     instr_remaining_cycles--;
     curr_micro_op++;
     return 1;
