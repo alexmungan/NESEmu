@@ -106,13 +106,20 @@ CPU::CPU() {
     opMatrix[0x85].cycle_op_list.push_back(&CPU::copy_operand1to2);
     opMatrix[0x85].cycle_op_list.push_back(&CPU::store_A);
     opMatrix[0x85].cycles = 3;
-    //LDA IMM
+    //LDY IMM
     opMatrix[0xA0].pneumonic = "LDY";
     opMatrix[0xA0].addressing_mode = IMM;
     opMatrix[0xA0].cycle_op_list.push_back(&CPU::fetch_operand_1byte);
     opMatrix[0xA0].cycle_op_list.push_back(&CPU::set_working_data_immediate);
     opMatrix[0xA0].cycle_op_list.push_back(&CPU::load_Y);
     opMatrix[0xA0].cycles = 2;
+    //LDA  ZP
+    opMatrix[0xA5].pneumonic = "LDA";
+    opMatrix[0xA5].addressing_mode = ZP;
+    opMatrix[0xA5].cycle_op_list.push_back(&CPU::fetch_operand_1byte);
+    opMatrix[0xA5].cycle_op_list.push_back(&CPU::set_working_data_zero_page);
+    opMatrix[0xA5].cycle_op_list.push_back(&CPU::load_A);
+    opMatrix[0xA5].cycles = 3;
     //LDY IMM
     opMatrix[0xA9].pneumonic = "LDA";
     opMatrix[0xA9].addressing_mode = IMM;
@@ -120,6 +127,14 @@ CPU::CPU() {
     opMatrix[0xA9].cycle_op_list.push_back(&CPU::set_working_data_immediate);
     opMatrix[0xA9].cycle_op_list.push_back(&CPU::load_A);
     opMatrix[0xA9].cycles = 2;
+    //LDA ZPX
+    opMatrix[0xB5].pneumonic = "LDA";
+    opMatrix[0xB5].addressing_mode = ZPX;
+    opMatrix[0xB5].cycle_op_list.push_back(&CPU::fetch_operand_1byte);
+    opMatrix[0xB5].cycle_op_list.push_back(&CPU::set_working_data_zero_page_X);
+    opMatrix[0xB5].cycle_op_list.push_back(&CPU::load_A);
+    opMatrix[0xB5].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[0xB5].cycles = 4;
     //CLV
     opMatrix[0xB8].pneumonic = "CLV";
     opMatrix[0xB8].addressing_mode = IMP;
