@@ -19,7 +19,7 @@ enum AddressingMode {
 
 
 class CPU {
-    using cycle_operation = uint8_t (CPU::*)();
+    using cycle_operation = void (CPU::*)();
 public:
     CPU();
     ~CPU();
@@ -41,10 +41,11 @@ public:
     uint8_t operand_1byte = 0x00; //Holds operands of addressing modes: immediate, ... TODO
     uint16_t operand_2byte = 0x0000; //Holds operand of addressing modes: TODO, . Also used to store computed addresses
     uint8_t working_data = 0x00; //Holds the value that will be used by instruction after addressing mode stuff has been handles
-    //Holds the number of cycles left to finish executing current instruction
-    uint8_t instr_remaining_cycles = 0;
     uint8_t curr_micro_op = 0;
-    size_t cycle_op_list_size = 0;
+    bool interrupt_poll_cycle = false; //Is set to true on the cycle where interrupt polling occurs (normally last cycle of an instruction)
+    //Function pointers to the operations that are overlapped with the next instruction's fetch_opcode and potentially the next cycle as well (for ADC Abs for example)
+    cycle_operation overlap_op1 = nullptr;
+    cycle_operation overlap_op2 = nullptr; //TODO: Only occurs with ADC and SBC?????
 
 private:
     /** BUS connection **/
@@ -63,7 +64,6 @@ private:
         std::string pneumonic;
         AddressingMode addressing_mode = IMP;
         std::vector<cycle_operation> cycle_op_list; //List of cycle-based-operations that make up the instruction, stored in reverse order so that (instr_cycles_remaining - 1) can be used to index into it
-        uint8_t cycles = 0;
     };
     std::vector<opInfo> opMatrix;
 public:
@@ -71,16 +71,15 @@ public:
     std::string getPneumonic(uint8_t opcode);
     AddressingMode getAddressingMode(uint8_t opcode);
     cycle_operation getNextFunctionPtr(uint8_t opcode); //Gives the function Ptr to the next cycle-based operation to execute for the current instruction
-    uint8_t getCycles(uint8_t opcode);
     size_t getListSize(uint8_t opcode); //Get size micro op list
 
     /**** CPU Cycle Based Operations ****/
     /**   All functions should return void and take no params **/
 
-    /** General cycle based operations that are used by a variety (or most) instructions **/
-    //Fetches the opcode from PRG-ROM, sets class member opcode
-    //Also sets instr_cycles_remaining and takes 1 cycle itself
-    uint8_t fetch_opcode();
+    /** General operations that may occur on a cycle for many instructions **/
+    //Fetches the opcode from PRG-ROM, finishes previous operation
+    //Sets instruction related state variables such as opcode, curr_micro_op, ... TODO
+    void fetch_opcode();
 
     //Fetches the next byte at PRG-ROM to get the operand to the instruction
     //This is used for addressing modes: IMM, TODO
@@ -89,9 +88,8 @@ public:
     uint8_t fetch_operand_2byte_LSB();
     uint8_t fetch_operand_2byte_MSB();
 
-    //Wastes a cycle, used for instructions that do some operation on a cycle w/o memory access
-    //therefore, they do not take a full cycle and need this function to decrement the instr_cycles_remaining counter
-    uint8_t waste_cycle();
+    //Performs dummy read
+    void dummy_read();
 
     /** Addressing mode functions **/
     //Immediate mode: the 1 byte fetched after the opcode is the working data
@@ -145,9 +143,15 @@ public:
     uint8_t load_Y();
     uint8_t store_A();
 
-    /** Status flag related cycle based operations **/
-    //Clears the carry flag of status register, takes 0 cycles
-    uint8_t clear_carry();
+    /** FLAG instructions **/
+    //CLC instruction
+    //Cycle 1: fetch OP CODE and finish previous op (overlap_op1), PC++
+    //Cycle 2: dummy_read(), decode OP CODE, poll for interrupts (on last cycle of instruction),
+    //check overlap_op2 to see if previous instr still needs operation to be done
+    void CLC_cycle2();
+    //Cycle 3 (start of next instruction): fetch next OP CODE and finish CLC (set C <- 0), PC++
+    //This cycle 3 could also be the first cycle of an interrupt sequence
+    void clear_carry(); //This is the operation of CLC that is overlapped with the next cycle
 
     //Clears the interrupt disable flag of status register, takes 0 cycles
     uint8_t clear_interrupt_disable();
