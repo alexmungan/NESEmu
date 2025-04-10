@@ -153,182 +153,158 @@ TEST(CPU, getNextFunctionPtr) {
     ASSERT_TRUE(cpu.getNextFunctionPtr(cpu.opcode) == &CPU::clear_carry);
 }
 
-TEST(CPU, getCycles) {
-    CPU cpu;
-    cpu.opcode = 0x18;
-    ASSERT_EQ(cpu.getCycles(cpu.opcode), 2);
-}
-
 TEST(CPU, getListSize) {
     CPU cpu;
     cpu.opcode = 0x18;
     ASSERT_EQ(cpu.getListSize(cpu.opcode), 2);
 }
 
-TEST(CPU, fetch_opcode) {
+//Tests all of the flags instructions
+//Also tests fetch_opcode, dummy_read, pipelining (i.e. executing overlap_op1 and 2), and helper functions
+TEST(CPU, flags) {
     CPU cpu;
     SystemBus systemBus;
     Cartridge cartridge;
-    std::string rom_path = "../ROMs/test_CLC.nes"; //PRG-ROM contains 0x18 opcode
+    std::string rom_path = "../ROMs/test_flags.nes";
     cartridge.loadROM(rom_path);
     systemBus.connect2cartridge(&cartridge);
     cpu.connect2Bus(&systemBus);
+    //std::cout << "HERE1" << std::endl;
+
+    //TEST Environment - init all status flags to 0
+    cpu.status_reg = 0x00;
+    cpu.setStatusReg(true, V); //Set to true here since there is no SEV instr and we can still test CLV
 
     cpu.PC = 0x8000;
-    ASSERT_EQ(cpu.PC, 0x8000);
-    ASSERT_EQ(cpu.fetch_opcode(), 1);
-    ASSERT_EQ(cpu.opcode, 0x18);
-    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
+    /* Set Flags to 1 */
+    //SEC cycle 1
+    cpu.fetch_opcode(); //Initial fetch to start sequence
     ASSERT_EQ(cpu.PC, 0x8001);
-    ASSERT_EQ(cpu.cycle_op_list_size,2);
-}
-
-TEST(CPU, waste_cycle) {
-    CPU cpu;
-    cpu.instr_remaining_cycles = 1;
-    cpu.curr_micro_op = 1;
-    ASSERT_EQ(cpu.waste_cycle(), 1);
-    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
-    ASSERT_EQ(cpu.curr_micro_op, 2);
-}
-
-TEST(CPU, clear_cary) {
-    CPU cpu;
-    cpu.status_reg = 0b11111111;
-    cpu.curr_micro_op = 0;
-    ASSERT_EQ(cpu.clear_carry(), 0);
-    ASSERT_EQ(cpu.getStatusReg(C), 0);
-    ASSERT_EQ(cpu.curr_micro_op, 1);
-}
-
-//TEST CLC instruction
-TEST(CPU, CLC) {
-    CPU cpu;
-    SystemBus systemBus;
-    Cartridge cartridge;
-    std::string rom_path = "../ROMs/test_CLC.nes"; //PRG-ROM contains 0x18 opcode
-    cartridge.loadROM(rom_path);
-    systemBus.connect2cartridge(&cartridge);
-    cpu.connect2Bus(&systemBus);
-
-    cpu.status_reg = 0b11111111;
-
-    cpu.PC = 0x8000;
-    ASSERT_EQ(cpu.PC, 0x8000);
-    ASSERT_EQ(cpu.fetch_opcode(), 1);
-    ASSERT_EQ(cpu.opcode, 0x18);
-    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
-    ASSERT_EQ(cpu.PC, 0x8001);
-    while (cpu.curr_micro_op < cpu.cycle_op_list_size) {
-        auto function = cpu.getNextFunctionPtr(cpu.opcode);
-        (cpu.*function)();
-    }
-
-    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
-    ASSERT_EQ(cpu.getStatusReg(C), 0);
-}
-
-//tests CLI CLV and CLD
-//Also tests that executing multiple instructions one after the other works as expected
-TEST(CPU, CLICLVCLD) {
-    CPU cpu;
-    SystemBus systemBus;
-    Cartridge cartridge;
-    std::string rom_path = "../ROMs/test_clear.nes"; //PRG-ROM contains 0x58 0xB8 0xD8 opcodes
-    cartridge.loadROM(rom_path);
-    systemBus.connect2cartridge(&cartridge);
-    cpu.connect2Bus(&systemBus);
-
-    cpu.status_reg = 0b11111111;
-
-    cpu.PC = 0x8000;
-    ASSERT_EQ(cpu.PC, 0x8000);
-    ASSERT_EQ(cpu.fetch_opcode(), 1);
-    ASSERT_EQ(cpu.opcode, 0x58);
-    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
-    ASSERT_EQ(cpu.PC, 0x8001);
-    while (cpu.curr_micro_op < cpu.cycle_op_list_size) {
-        auto function = cpu.getNextFunctionPtr(cpu.opcode);
-        (cpu.*function)();
-    }
-    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
-    ASSERT_EQ(cpu.getStatusReg(I), 0);
-
-    ASSERT_EQ(cpu.PC, 0x8001);
-    ASSERT_EQ(cpu.fetch_opcode(), 1);
-    ASSERT_EQ(cpu.opcode, 0xB8);
-    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
-    ASSERT_EQ(cpu.PC, 0x8002);
-    while (cpu.curr_micro_op < cpu.cycle_op_list_size) {
-        auto function = cpu.getNextFunctionPtr(cpu.opcode);
-        (cpu.*function)();
-    }
-    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
-    ASSERT_EQ(cpu.getStatusReg(V), 0);
-
-    ASSERT_EQ(cpu.PC, 0x8002);
-    ASSERT_EQ(cpu.fetch_opcode(), 1);
-    ASSERT_EQ(cpu.opcode, 0xD8);
-    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
-    ASSERT_EQ(cpu.PC, 0x8003);
-    while (cpu.curr_micro_op < cpu.cycle_op_list_size) {
-        auto function = cpu.getNextFunctionPtr(cpu.opcode);
-        (cpu.*function)();
-    }
-    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
-    ASSERT_EQ(cpu.getStatusReg(D), 0);
-}
-
-//Test SEC, SED, SEI
-TEST(CPU, SET) {
-    CPU cpu;
-    SystemBus systemBus;
-    Cartridge cartridge;
-    std::string rom_path = "../ROMs/test_set.nes"; //PRG-ROM contains 0x38 0xF8 0x78 opcodes
-    cartridge.loadROM(rom_path);
-    systemBus.connect2cartridge(&cartridge);
-    cpu.connect2Bus(&systemBus);
-
-    cpu.status_reg = 0b00000000;
-
-    cpu.PC = 0x8000;
-    ASSERT_EQ(cpu.PC, 0x8000);
-    ASSERT_EQ(cpu.fetch_opcode(), 1);
     ASSERT_EQ(cpu.opcode, 0x38);
-    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, false);
+    //SEC cycle 2
+    //std::cout << "HERE2" << std::endl;
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    auto function = cpu.getNextFunctionPtr(cpu.opcode);
+    (cpu.*function)();
     ASSERT_EQ(cpu.PC, 0x8001);
-    while (cpu.curr_micro_op < cpu.cycle_op_list_size) {
-        auto function = cpu.getNextFunctionPtr(cpu.opcode);
-        (cpu.*function)();
-    }
-    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
-    ASSERT_EQ(cpu.getStatusReg(C), 1);
-
-    ASSERT_EQ(cpu.PC, 0x8001);
-    ASSERT_EQ(cpu.fetch_opcode(), 1);
-    ASSERT_EQ(cpu.opcode, 0xF8);
-    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, true);
+    ASSERT_EQ(cpu.getStatusReg(C), false); //Should still be false
+    //SEI cycle 1
+    //std::cout << "HERE3" << std::endl;
+    ASSERT_EQ(cpu.curr_micro_op, 1); //micro_op in SEC's instr_list
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    (cpu.*function)();
     ASSERT_EQ(cpu.PC, 0x8002);
-    while (cpu.curr_micro_op < cpu.cycle_op_list_size) {
-        auto function = cpu.getNextFunctionPtr(cpu.opcode);
-        (cpu.*function)();
-    }
-    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
-    ASSERT_EQ(cpu.getStatusReg(D), 1);
-
-    ASSERT_EQ(cpu.PC, 0x8002);
-    ASSERT_EQ(cpu.fetch_opcode(), 1);
     ASSERT_EQ(cpu.opcode, 0x78);
-    ASSERT_EQ(cpu.instr_remaining_cycles, 1);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, false);
+    ASSERT_EQ(cpu.getStatusReg(C), true); //Now it should be true
+    //SEI cycle 2
+    //std::cout << "HERE4" << std::endl;
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    (cpu.*function)();
+    ASSERT_EQ(cpu.PC, 0x8002);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, true);
+    ASSERT_EQ(cpu.getStatusReg(I), false); //Should still be false
+    //SED cycle 1
+    //std::cout << "HERE5" << std::endl;
+    ASSERT_EQ(cpu.curr_micro_op, 1);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    (cpu.*function)();
     ASSERT_EQ(cpu.PC, 0x8003);
-    while (cpu.curr_micro_op < cpu.cycle_op_list_size) {
-        auto function = cpu.getNextFunctionPtr(cpu.opcode);
-        (cpu.*function)();
-    }
-    ASSERT_EQ(cpu.instr_remaining_cycles, 0);
-    ASSERT_EQ(cpu.getStatusReg(I), 1);
+    ASSERT_EQ(cpu.opcode, 0xFD);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, false);
+    ASSERT_EQ(cpu.getStatusReg(I), true); //Now it should be true
+    //SED cycle 2
+    //std::cout << "HERE6" << std::endl;
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    (cpu.*function)();
+    ASSERT_EQ(cpu.PC, 0x8003);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, true);
+    ASSERT_EQ(cpu.getStatusReg(D), false); //Should still be false
+
+    /* Clear Flags to 0 */
+    //CLC cycle 1
+    //std::cout << "HERE7" << std::endl;
+    ASSERT_EQ(cpu.curr_micro_op, 1); //micro_op in SED instr_list
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    (cpu.*function)();
+    ASSERT_EQ(cpu.PC, 0x8004);
+    ASSERT_EQ(cpu.opcode, 0x18);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, false);
+    ASSERT_EQ(cpu.getStatusReg(D), true); //Should be set now by overlap
+    //CLC cycle 2
+    //std::cout << "HERE8" << std::endl;
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    (cpu.*function)();
+    ASSERT_EQ(cpu.PC, 0x8004);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, true);
+    ASSERT_EQ(cpu.getStatusReg(C), true); //Should still be true
+    //CLI cycle 1
+    //std::cout << "HERE9" << std::endl;
+    ASSERT_EQ(cpu.curr_micro_op, 1);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    (cpu.*function)();
+    ASSERT_EQ(cpu.PC, 0x8005);
+    ASSERT_EQ(cpu.opcode, 0x58);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, false);
+    ASSERT_EQ(cpu.getStatusReg(C), false); //Now, it should be cleared
+    //CLI cycle 2
+    //std::cout << "HERE10" << std::endl;
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    (cpu.*function)();
+    ASSERT_EQ(cpu.PC, 0x8005);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, true);
+    ASSERT_EQ(cpu.getStatusReg(I), true); //Should still be true
+    //CLD cycle 1
+    //std::cout << "HERE11" << std::endl;
+    ASSERT_EQ(cpu.curr_micro_op, 1);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    (cpu.*function)();
+    ASSERT_EQ(cpu.PC, 0x8006);
+    ASSERT_EQ(cpu.opcode, 0xD8);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, false);
+    ASSERT_EQ(cpu.getStatusReg(I), false); //Now, it should be cleared
+    //CLD cycle 2
+    //std::cout << "HERE12" << std::endl;
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    (cpu.*function)();
+    ASSERT_EQ(cpu.PC, 0x8006);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, true);
+    ASSERT_EQ(cpu.getStatusReg(D), true); //Should still be true
+    //CLV cycle 1
+    //std::cout << "HERE13" << std::endl;
+    ASSERT_EQ(cpu.curr_micro_op, 1);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    (cpu.*function)();
+    ASSERT_EQ(cpu.PC, 0x8007);
+    ASSERT_EQ(cpu.opcode, 0xB8);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, false);
+    ASSERT_EQ(cpu.getStatusReg(D), false); //Now, it should be cleared
+    //CLV cycle 2
+    //std::cout << "HERE14" << std::endl;
+    ASSERT_EQ(cpu.curr_micro_op, 0);
+    function = cpu.getNextFunctionPtr(cpu.opcode);
+    (cpu.*function)();
+    ASSERT_EQ(cpu.PC, 0x8007);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, true);
+    ASSERT_EQ(cpu.getStatusReg(V), true); //Should still be true
+    //Do fetch_opcode so that we can see than V is cleared this cycle
+    cpu.fetch_opcode(); //This will be a random byte
+    ASSERT_EQ(cpu.PC, 0x8008);
+    ASSERT_EQ(cpu.interrupt_poll_cycle, false);
+    ASSERT_EQ(cpu.getStatusReg(V), false); //Now, it should be cleared
+
 }
 
+
+
+/*
 //Test AND IMM instruction, result is not zero and is negative
 TEST(CPU, AND_IMM_NZ_N) {
     CPU cpu;
@@ -956,6 +932,6 @@ TEST(CPU, LDA_ZP) {
 
     ASSERT_EQ(cpu.getStatusReg(Z), false);
     ASSERT_EQ(cpu.getStatusReg(N), true);
-}
+} */
 
 

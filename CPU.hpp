@@ -144,7 +144,7 @@ public:
     uint8_t store_A();
 
     /** FLAG instructions **/
-    //CLC instruction
+    //CLC
     //Cycle 1: fetch OP CODE and finish previous op (overlap_op1), PC++
     //Cycle 2: dummy_read(), decode OP CODE, poll for interrupts (on last cycle of instruction),
     //check overlap_op2 to see if previous instr still needs operation to be done
@@ -153,20 +153,39 @@ public:
     //This cycle 3 could also be the first cycle of an interrupt sequence
     void clear_carry(); //This is the operation of CLC that is overlapped with the next cycle
 
-    //Clears the interrupt disable flag of status register, takes 0 cycles
-    uint8_t clear_interrupt_disable();
+    //CLI
+    //Does the same steps as CLC except that I is set to 0 instead of C
+    void CLI_cycle2();
+    void clear_interrupt_disable();
 
-    //Clears the overflow flag of status register, takes 0 cycles
-    uint8_t clear_overflow();
+    //CLV
+    //Does the same steps as CLC except that V is set to 0 instead of C
+    void CLV_cycle2();
+    void clear_overflow();
 
-    //Clears the decimal flag of status register, takes 0 cycles
-    //decimal mode is always disabled in NES' 2A03
-    uint8_t clear_decimal();
+    //CLD
+    //Does the same steps as CLC except that D is set to 0 instead of C
+    void CLD_cycle2();
+    void clear_decimal();
 
-    //Sets flags
-    uint8_t set_carry();
-    uint8_t set_interrupt_disable();
-    uint8_t set_decimal();
+    //SEC
+    //Cycle 1: fetch OP CODE and finish previous op (overlap_op1), PC++
+    //Cycle 2: dummy_read(), decode OP CODE, poll for interrupts (on last cycle of instruction),
+    //check overlap_op2 to see if previous instr still needs operation to be done
+    void SEC_cycle2();
+    //Cycle 3 (start of next instruction): fetch next OP CODE and finish SEC (set C <- 1), PC++
+    //This cycle 3 could also be the first cycle of an interrupt sequence
+    void set_carry();
+
+    //SEI
+    //Does the same steps as SEC except that I is set to 1 instead of C
+    void SEI_cycle2();
+    void set_interrupt_disable();
+
+    //SED
+    //Does the same steps as SEC except that D is set to 1 instead of C
+    void SED_cycle2();
+    void set_decimal();
 
     /** Bitwise **/
     //Bitwise AND - takes 0 cycles
