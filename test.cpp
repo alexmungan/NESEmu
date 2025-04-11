@@ -159,7 +159,7 @@ TEST(CPU, getListSize) {
     ASSERT_EQ(cpu.getListSize(cpu.opcode), 2);
 }
 
-//Tests all of the flags instructions
+//Tests all flags instructions
 //Also tests fetch_opcode, dummy_read, pipelining (i.e. executing overlap_op1 and 2), and helper functions
 TEST(CPU, flags) {
     CPU cpu;

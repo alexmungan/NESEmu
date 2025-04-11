@@ -7,13 +7,17 @@ NES::~NES() {
 
 }
 
-void NES::initialize(const std::string &romPath) {
-
+void NES::initialize(const std::string &rom_path) {
+    cartridge.loadROM(rom_path);
+    systemBus.connect2cartridge(&cartridge);
+    cpu.connect2Bus(&systemBus);
 }
 
 void NES::run() {
-    //Set PC to reset vector address??
-        //reset vector should set global_cycles to 0
-    //if stepMode, output initial state
+    //Output power on state TODO
+
+    //RESET sequence TODO
+
+    //Output initial state (after RESET) TODO
 
 }

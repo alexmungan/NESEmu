@@ -18,11 +18,11 @@ private:
     CPU cpu;
     //PPU ppu;
     //APU apu;
-    Cartridge cart;
+    Cartridge cartridge;
 
 public:
     //Function to initialize NES system (basically, insert cartridge)
-    void initialize(const std::string &romPath);
+    void initialize(const std::string &rom_path);
 
     //Function to run the inserted game
     void run();

@@ -29,7 +29,7 @@ public:
     uint8_t X = 0x00;
     uint8_t Y = 0x00;
     uint8_t SP = 0xFD;
-    uint16_t PC = 0x00; //0xFFFC???
+    uint16_t PC = 0xFFFC; //RESET vector
     uint8_t status_reg = 0b00000100; //bitfield
 
     //Helper functions
@@ -38,9 +38,9 @@ public:
     bool getStatusReg(Flags flag);
 
     uint8_t opcode = 0x00;
-    uint8_t operand_1byte = 0x00; //Holds operands of addressing modes: immediate, ... TODO
-    uint16_t operand_2byte = 0x0000; //Holds operand of addressing modes: TODO, . Also used to store computed addresses
-    uint8_t working_data = 0x00; //Holds the value that will be used by instruction after addressing mode stuff has been handles
+    uint8_t operand_byte1 = 0x00; //Holds the first byte after opcode
+    uint8_t operand_byte2 = 0x0000; //Holds the 2nd byte after opcode
+    uint8_t working_data = 0x00; //Holds the value that will be used by instruction after addressing mode stuff has been handled, it may also hold an ALU result (for ADC instr for ex) but we must be careful not to modify working_data before storing this ALU result to A
     uint8_t curr_micro_op = 0;
     bool interrupt_poll_cycle = false; //Is set to true on the cycle where interrupt polling occurs (normally last cycle of an instruction)
     //Function pointers to the operations that are overlapped with the next instruction's fetch_opcode and potentially the next cycle as well (for ADC Abs for example)
@@ -92,6 +92,10 @@ public:
     void dummy_read();
 
     /** Addressing mode functions **/
+    //Cycle 2 fetches the next instruction byte into operand_byte1 and increments PC
+    void ABS_cycle2();
+
+    /** Addressing mode functions **/
     //Immediate mode: the 1 byte fetched after the opcode is the working data
     uint8_t set_working_data_immediate();
 
@@ -138,10 +142,59 @@ public:
     //
     uint8_t copy_operand1to2();
 
-    /** Data Movement **/
-    uint8_t load_A();
-    uint8_t load_Y();
-    uint8_t store_A();
+    /** Data Movement (access ops)**/
+    //LDA IMM
+    //Cycle 1: fetch OP CODE and finish previous op (overlap_op1), PC++
+    //Cycle 2: fetch next instr byte, decode OP CODE, PC++
+    //check overlap_op2 to see if prev instr still needs internal operation to be done
+    void LDA_IMM_cycle2();
+    //Cycle 3 (start of next instr): fetch next OP CODE and finish LDA IMM (A <- IMM val), PC++
+    //This cycle 3 could also be the first cycle of an interrupt sequence
+    void load_A(); //This is the operation that is overlapped with cycle 3
+
+    //LDX IMM
+    //Same as LDA IMM but for X reg
+    void LDX_IMM_cycle2();
+    void load_X();
+
+    //LDY IMM
+    //Same as LDA IMM but for Y reg
+    void LDY_IMM_cycle2();
+    void load_Y();
+
+    /** Data Movement (transfer ops) **/
+    //TAX
+    //Cycle 1: fetch OP CODE and finish prev op (overlap_op1), PC++
+    //fetch_opcode()
+    //Cycle 2: dummy_read(), decode OP CODE, poll for interrupts (on last cycle of instr),
+    //check overlap2 to see if prev instr still needs operation done
+    void TAX_cycle2();
+    //Cycle 3 (start of next isntruction): fetch next OP CODE and finish TAX (X <- A, set Z and N flags), PC++
+    //This cycle 3 could also be the first cycle of an interrupt sequence
+    //load_X()
+
+    //TXA
+    //Same as TAX except transfer direction is switched
+    void TXA_cycle2();
+
+    //TAY
+    //Same as TAX except Y used in place of X
+    void TAY_cycle2();
+
+    //TYA
+    //Same as TAY except transfer direction is switched
+    void TYA_cycle2();
+
+    //TSX
+    //Same as TAX except SP is used in place of A
+    void TSX_cycle2();
+
+    //TXS
+    //Same as TSX but transfer direction is switched and N and Z flags are not set
+    void TXS_cycle2();
+    //Helper
+    void load_SP();
+
 
     /** FLAG instructions **/
     //CLC
@@ -151,7 +204,7 @@ public:
     void CLC_cycle2();
     //Cycle 3 (start of next instruction): fetch next OP CODE and finish CLC (set C <- 0), PC++
     //This cycle 3 could also be the first cycle of an interrupt sequence
-    void clear_carry(); //This is the operation of CLC that is overlapped with the next cycle
+    void clear_carry(); //This is the operation of CLC that is overlapped with cycle 3
 
     //CLI
     //Does the same steps as CLC except that I is set to 0 instead of C
@@ -190,6 +243,20 @@ public:
     /** Bitwise **/
     //Bitwise AND - takes 0 cycles
     uint8_t AND();
+
+    /** Jump Instructions **/
+    //JMP Abs
+    //Cycle 1: fetch OP CODE and finish prev op (overlap_op1), PC++
+    //Cycle 2: fetch adl, decode OP CODE, PC++, check overlap_op2
+    //void ABS_cycle2();
+    //Cycle 3: fetch adh, PC <-- adh, adl, poll for interrupts
+    void JMP_ABS_cycle3();
+    //Cycle 4 (start of next instr): fetch next OP CODE, no overlapped op, PC++
+
+    /** Interrupt Sequences **/
+    //RESET
+    //Cycle 1:
+
 
 };
 
