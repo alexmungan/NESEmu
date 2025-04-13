@@ -3,6 +3,7 @@
 
 #include <cstdint>
 
-extern uint64_t cycles;
+extern uint64_t cycles; //Stores global cycle count
+extern bool stepMode;
 
 #endif //GLOBAL_VARS_HPP

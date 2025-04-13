@@ -1,21 +1,36 @@
 #include <iostream>
-#include <chrono>
-#include <thread>
 
 #include "NES.hpp"
+#include "global_vars.hpp"
 
-//constexpr int  CPU_CYCLES_PER_FRAME = 29780; //1789733hz / 60.0988 fps = 29780.51142
+bool stepMode = false;
 
-//void runFrame();
+int main(int argc, char* argv[]) {
+    /** check cmd line args **/
+    if (argc != 3) {
+        std::cerr << "Usage: " << argv[0] << " <rom_path> <step_mode (true|false)>\n";
+        return 1;
+    }
 
-int main() {
+    std::string rom_path = argv[1];
+    std::string step_arg = argv[2];
+
+    for (auto& c : step_arg) c = std::tolower(c);
+    if (step_arg == "true") {
+        stepMode = true;
+    } else if (step_arg == "false") {
+        stepMode = false;
+    } else {
+        std::cerr << "Invalid value for step_mode. Use true/false or 1/0.\n";
+        return 1;
+    }
 
     /** Startup system and read in ROM image **/
-    //NES nes;
-    //nes.initialize(???)
+    NES nes;
+    nes.initialize(rom_path);
 
     /** Run Emulator **/
-    //nes.run();
+    nes.run();
 
     return 0;
 }

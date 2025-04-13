@@ -4,9 +4,12 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <iostream>
+#include <iomanip>
 
 #include "SystemBus.hpp"
 #include "global_vars.hpp"
+#include "Constants.hpp"
 
 enum Flags {
     C, Z, I, D, B, U, V, N
@@ -14,7 +17,7 @@ enum Flags {
 
 //13 addressing modes
 enum AddressingMode {
-    Accum, IMM, ABS, ZP, ZPX, ZPY, ABSX, ABSY, IMP, REL, INDX, INDY, IND
+    Accum, IMM, ABS, ZP, ZPX, ZPY, ABSX, ABSY, IMP, REL, INDX, INDY, IND, INTERRUPT
 };
 
 
@@ -29,15 +32,24 @@ public:
     uint8_t X = 0x00;
     uint8_t Y = 0x00;
     uint8_t SP = 0xFD;
-    uint16_t PC = 0xFFFC; //RESET vector
+    uint16_t PC = 0x0000;
     uint8_t status_reg = 0b00000100; //bitfield
+
+    /** Interrupt poll status **/
+    //Holds whether the interrupt signals were detected last cycle
+    bool IRQ;
+    bool NMI;
+    //Holds whether the interrupt signals (for each type) have occurred that cycle
+    bool RESET_signal;
+    bool IRQ_signal;
+    bool NMI_signal;
 
     //Helper functions
     //Set some bit in status register to 0 or 1
     void setStatusReg(bool set, Flags flag);
     bool getStatusReg(Flags flag);
 
-    uint8_t opcode = 0x00;
+    uint16_t opcode = 0x00; //Is 16 bits rather than 8 b/c I added extra "opcodes" to the instr table for interrupt sequences
     uint8_t operand_byte1 = 0x00; //Holds the first byte after opcode
     uint8_t operand_byte2 = 0x0000; //Holds the 2nd byte after opcode
     uint8_t working_data = 0x00; //Holds the value that will be used by instruction after addressing mode stuff has been handled, it may also hold an ALU result (for ADC instr for ex) but we must be careful not to modify working_data before storing this ALU result to A
@@ -67,11 +79,18 @@ private:
     };
     std::vector<opInfo> opMatrix;
 public:
+    /** Helper functions for logging and stepMode **/
+    //Outputs CPU state to terminal
+    void cpu_dump();
+
+    //Converts integer representation of addressing mode to string representation
+    std::string addressingModeToString(AddressingMode addressing_mode);
+
     /** Helper functions to access opMatrix lookup table**/
-    std::string getPneumonic(uint8_t opcode);
-    AddressingMode getAddressingMode(uint8_t opcode);
-    cycle_operation getNextFunctionPtr(uint8_t opcode); //Gives the function Ptr to the next cycle-based operation to execute for the current instruction
-    size_t getListSize(uint8_t opcode); //Get size micro op list
+    std::string getPneumonic(uint16_t opcode);
+    AddressingMode getAddressingMode(uint16_t opcode);
+    cycle_operation getNextFunctionPtr(uint16_t opcode); //Gives the function Ptr to the next cycle-based operation to execute for the current instruction
+    size_t getListSize(uint16_t opcode); //Get size micro op list
 
     /**** CPU Cycle Based Operations ****/
     /**   All functions should return void and take no params **/
@@ -90,6 +109,11 @@ public:
 
     //Performs dummy read
     void dummy_read();
+
+    //Wastes a cycle doing nothing - only used during RESET interrupt sequence b/c some of those cycles do unimportant stuff
+    //Gonna set the I flag here, again it doesn't really matter which cycle we do it during the sequence since interrupt polling is not done during interrupt sequnces
+    //SP value doesn't matter as the programmer should set it in their handler
+    void waste_cycle();
 
     /** Addressing mode functions **/
     //Cycle 2 fetches the next instruction byte into operand_byte1 and increments PC
@@ -255,8 +279,11 @@ public:
 
     /** Interrupt Sequences **/
     //RESET
-    //Cycle 1:
-
+    //Cycles 1-5: don't really matter it seems
+    //Cycle 6: Fetch address of RESET handler
+    void fetch_RESET_vector_LSB();
+    //Cycle 7: Fetch address of RESET handler
+    void fetch_RESET_vector_MSB();
 
 };
 

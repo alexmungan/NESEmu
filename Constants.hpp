@@ -20,4 +20,10 @@ constexpr size_t MIRROR_RAM_END = 0x1FFF; //End of mirrored RAM
 constexpr size_t PRG_ROM_START = 0x8000;
 constexpr size_t PRG_ROM_END = 0xFFFF;
 
+/** CPU constants **/
+//Opcodes for my pseudo opcodes for interrupts
+constexpr uint16_t RESET = 0x0100;
+constexpr uint16_t NMI = 0x0101;
+constexpr uint16_t IRQ = 0x0102;
+
 #endif //CONSTANTS_HPP

@@ -8,9 +8,12 @@
 
 #include <array>
 #include <cstdint>
+#include <iostream>
+#include <iomanip>
 
 #include "Cartridge.hpp"
 #include "Constants.hpp"
+#include "global_vars.hpp"
 
 class SystemBus {
 public:
@@ -19,12 +22,6 @@ public:
     ~SystemBus();
 
 private:
-
-    //TODO: Interrupts
-    //bool NMI //Non maskable interrupt (triggered by ?? for ?? purpose)
-    //bool IRQ //Interrupt request (triggered by ?? for ?? purpose)
-    //bool BRK //Software interrupt TODO: Do I even need this here?
-
     //Devices connected to the bus
     //Note: CPU makes requests to the bus and is of course connected to the bus, but
     //The connection is only needed from the CPU class
@@ -34,6 +31,9 @@ private:
     Cartridge* cartridge_ptr = nullptr;
     //I/O?????
     std::array<uint8_t, 2 * KIBIBYTE> RAM; //2KB of system RAM
+
+    //Helper function for logging. Gets a string representation of a memory space name that an address lives in
+    std::string getMemSpaceString(uint16_t address);
 
 public:
     /** Bus reading and writing **/

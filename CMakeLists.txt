@@ -43,13 +43,33 @@ if (NOT GTEST_DOWNLOAD)
     FetchContent_MakeAvailable(gtest)
 endif()
 
+#
+#set(SFML_DIR $ENV{SFML_DIR})
+#if(NOT DEFINED SFML_DIR)
+#    message(FATAL_ERROR "SFML_DIR is not set. Please provide it via -DSFML_DIR=<path>")
+#endif()
+#find_package(SFML 3.0.0 COMPONENTS Graphics Window System Audio REQUIRED)
+
+# Add SFML include directory
+#set(SFML_INCLUDE_DIR $ENV{SFML_INCLUDE_DIR})
+#if(NOT DEFINED SFML_INCLUDE_DIR)
+#    message(FATAL_ERROR "SFML_DIR is not set. Please provide it via -DSFML_DIR=<path>")
+#endif()
+#########
+
 # Set up the test executable
 if (ENABLE_TESTS)
     add_executable(test_NESEmu ${TEST_FILES})
     target_link_libraries(test_NESEmu gtest gtest_main pthread)
+    #target_include_directories(test_NESEmu PRIVATE ${SFML_INCLUDE_DIR})
+    #target_link_libraries(test_NESEmu SFML::Graphics SFML::Window SFML::System SFML::Audio)
 endif()
 
 # Set up the normal emulator executable
 if(NOT ENABLE_TESTS)
     add_executable(NESEmu main.cpp ${SOURCE_FILES})
+    #target_include_directories(NESEmu PRIVATE ${SFML_INCLUDE_DIR})
+    #target_link_libraries(NESEmu SFML::Graphics SFML::Window SFML::System SFML::Audio)
 endif()
+
+

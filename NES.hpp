@@ -6,6 +6,8 @@
 #include "SystemBus.hpp"
 #include "CPU.hpp"
 #include "Cartridge.hpp"
+#include "global_vars.hpp"
+#include "Constants.hpp"
 
 class NES {
 public:

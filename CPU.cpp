@@ -5,7 +5,7 @@ uint64_t cycles = 0;
 
 CPU::CPU() {
     //Initialize the opcode matrix
-    opMatrix.resize(16*16);
+    opMatrix.resize(16*16 + 3); //3 is for the interrupt sequences
     //CLC
     opMatrix[0x18].pneumonic = "CLC";
     opMatrix[0x18].addressing_mode = IMP;
@@ -92,6 +92,20 @@ CPU::CPU() {
     opMatrix[0xFD].addressing_mode = IMP;
     opMatrix[0xFD].cycle_op_list.push_back(&CPU::SED_cycle2);
     opMatrix[0xFD].cycle_op_list.push_back(&CPU::fetch_opcode);
+
+    /** 3 interrupt sequences **/
+    //Note: these are not really opcodes/instruction, they are just stored here for programming convenience
+    opMatrix[RESET].pneumonic = "RESET";
+    opMatrix[RESET].addressing_mode = INTERRUPT;
+    opMatrix[RESET].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[RESET].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[RESET].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[RESET].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[RESET].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[RESET].cycle_op_list.push_back(&CPU::fetch_RESET_vector_LSB);
+    opMatrix[RESET].cycle_op_list.push_back(&CPU::fetch_RESET_vector_MSB);
+    opMatrix[RESET].cycle_op_list.push_back(&CPU::fetch_opcode);
+
 }
 
 CPU::~CPU() {
@@ -121,19 +135,88 @@ void CPU::write(uint16_t address, uint8_t data) {
     system_bus_ptr->write(address, data);
 }
 
-std::string CPU::getPneumonic(uint8_t opcode) {
+/** Helper functions for logging and stepMode **/
+void CPU::cpu_dump() {
+    //Output the opcode or interrupt currently being executed
+    std::string pneumonic = getPneumonic(opcode);
+    std::string addressingMode = addressingModeToString(getAddressingMode(opcode));
+    std::cout << "Opcode: " << pneumonic << " " << addressingMode << "\n";
+    //Output PC
+    std::cout << "PC: $"
+              << std::hex
+              << std::uppercase
+              << std::setw(4)
+              << std::setfill('0')
+              << PC
+              << "\n";
+    //Output status register
+    std::cout << "P: ";
+    if (getStatusReg(N)) std::cout << "N ";
+    else std::cout << "n ";
+    if (getStatusReg(V)) std::cout << "V ";
+    else std::cout << "v ";
+    std::cout << "- ";
+    if (getStatusReg(B)) std::cout << "B ";
+    else std::cout << "b ";
+    if (getStatusReg(D)) std::cout << "D ";
+    else std::cout << "d ";
+    if (getStatusReg(I)) std::cout << "I ";
+    else std::cout << "i ";
+    if (getStatusReg(Z)) std::cout << "Z ";
+    else std::cout << "z ";
+    if (getStatusReg(V)) std::cout << "C\n";
+    else std::cout << "c\n";
+    //Output A
+    std::cout << "A: $"
+              << std::setw(2)
+              << A
+              << "\n";
+    //Output X
+    std::cout << "X: $" << X << "\n";
+    //Output Y
+    std::cout << "Y: $" << Y << "\n";
+    //Output SP
+    std::cout << "SP: $" << SP << "\n";
+
+    //Reset output format to decimal
+    std::cout << std::dec;
+}
+
+std::string CPU::addressingModeToString(AddressingMode addressing_mode) {
+    switch (addressing_mode) {
+        case Accum: return "Accumulator";
+        case IMM:   return "Immediate";
+        case ABS:   return "Absolute";
+        case ZP:    return "Zero Page";
+        case ZPX:   return "Zero Page, X";
+        case ZPY:   return "Zero Page, Y";
+        case ABSX:  return "Absolute, X";
+        case ABSY:  return "Absolute, Y";
+        case IMP:   return "Implied";
+        case REL:   return "Relative";
+        case INDX:  return "Indexed Indirect (Indirect, X)";
+        case INDY:  return "Indirect Indexed (Indirect), Y";
+        case IND:   return "Indirect";
+        case INTERRUPT: return "interrupt sequence";
+        default:    return "Unknown";
+    }
+}
+
+/** Helper functions to access opMatrix lookup table**/
+
+std::string CPU::getPneumonic(uint16_t opcode) {
     return opMatrix[opcode].pneumonic;
 }
 
-AddressingMode CPU::getAddressingMode(uint8_t opcode) {
+AddressingMode CPU::getAddressingMode(uint16_t opcode) {
     return opMatrix[opcode].addressing_mode;
 }
 
-CPU::cycle_operation CPU::getNextFunctionPtr(uint8_t opcode) {
+CPU::cycle_operation CPU::getNextFunctionPtr(uint16_t opcode) {
     return opMatrix[opcode].cycle_op_list[curr_micro_op];
 }
 
-size_t CPU::getListSize(uint8_t opcode) {
+size_t CPU::getListSize(uint16_t opcode) {
     return opMatrix[opcode].cycle_op_list.size();
 }
 
@@ -173,6 +256,12 @@ uint8_t CPU::fetch_operand_2byte_MSB() {
 
 void CPU::dummy_read() {
     read(PC);
+}
+
+void CPU::waste_cycle() {
+    setStatusReg(true, I);
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
 }
 /****/
 
@@ -646,6 +735,24 @@ void CPU::JMP_ABS_cycle3() {
     overlap_op1 = nullptr;
     overlap_op2 = nullptr;
     interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+/** Interrupts **/
+void CPU::fetch_RESET_vector_LSB() {
+    PC = static_cast<uint16_t>(read(0xFFFC));
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::fetch_RESET_vector_MSB() {
+    uint16_t MSB = static_cast<uint16_t>(read(0xFFFD));
+    PC |= (MSB << 8);
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = false;
     curr_micro_op++;
 }
 
