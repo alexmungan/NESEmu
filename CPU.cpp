@@ -1,8 +1,6 @@
 
 #include "CPU.hpp"
 
-uint64_t cycles = 0;
-
 CPU::CPU() {
     //Initialize the opcode matrix
     opMatrix.resize(16*16 + 3); //3 is for the interrupt sequences
@@ -147,7 +145,7 @@ void CPU::cpu_dump() {
               << std::uppercase
               << std::setw(4)
               << std::setfill('0')
-              << PC
+              << (int)PC
               << "\n";
     //Output status register
     std::cout << "P: ";
@@ -164,19 +162,36 @@ void CPU::cpu_dump() {
     else std::cout << "i ";
     if (getStatusReg(Z)) std::cout << "Z ";
     else std::cout << "z ";
-    if (getStatusReg(V)) std::cout << "C\n";
+    if (getStatusReg(C)) std::cout << "C\n";
     else std::cout << "c\n";
     //Output A
     std::cout << "A: $"
+          << std::hex
+          << std::setw(2)
+          << std::setfill('0')
+          << (int)A
+          << "\n";
+
+    std::cout << "X: $"
+              << std::hex
               << std::setw(2)
-              << A
+              << std::setfill('0')
+              << (int)X
               << "\n";
-    //Output X
-    std::cout << "X: $" << X << "\n";
-    //Output Y
-    std::cout << "Y: $" << Y << "\n";
-    //Output SP
-    std::cout << "SP: $" << SP << "\n";
+
+    std::cout << "Y: $"
+              << std::hex
+              << std::setw(2)
+              << std::setfill('0')
+              << (int)Y
+              << "\n";
+
+    std::cout << "SP: $"
+              << std::hex
+              << std::setw(2)
+              << std::setfill('0')
+              << (int)SP
+              << "\n";
 
     //Reset output format to decimal
     std::cout << std::dec;

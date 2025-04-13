@@ -73,7 +73,7 @@ public:
 private:
     /** 2A03 opcode matrix **/
     struct opInfo {
-        std::string pneumonic;
+        std::string pneumonic = "???";
         AddressingMode addressing_mode = IMP;
         std::vector<cycle_operation> cycle_op_list; //List of cycle-based-operations that make up the instruction, stored in reverse order so that (instr_cycles_remaining - 1) can be used to index into it
     };
