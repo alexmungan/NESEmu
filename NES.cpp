@@ -28,7 +28,10 @@ void NES::run() {
     }
 
     //After 1rst cycle, system will start executing the RESET interrupt sequence
-    cpu.opcode = RESET;
+    cpu.opcode = RESET_opcode;
+
+    //TODO: temp for testing
+    cpu.write(0x0012, 0x83);
 
     //Main execution loop (infinite loop)
     while (true) {
@@ -55,13 +58,24 @@ void NES::run() {
 
         //TODO: Execute 3 PPU cycles
 
+        if (stepMode) {
+            cpu.cpu_dump();
+        }
+
         //Interrupt polling
-        if (cpu.RESET_signal)
-            cpu.opcode = RESET;
-        else if (cpu.interrupt_poll_cycle && cpu.NMI)
-            cpu.opcode = NMI;
-        else if (cpu.interrupt_poll_cycle && cpu.IRQ)
-            cpu.opcode = IRQ;
+        if (cpu.RESET_signal) {
+            cpu.opcode = RESET_opcode;
+            cpu.curr_micro_op = 0;
+        }
+        else if (cpu.interrupt_poll_cycle && cpu.NMI) {
+            std::cout << "HERE\n";
+            cpu.opcode = NMI_opcode;
+            cpu.curr_micro_op = 0;
+        }
+        else if (cpu.interrupt_poll_cycle && cpu.IRQ) {
+            cpu.opcode = IRQ_opcode;
+            cpu.curr_micro_op = 0;
+        }
 
         //Interrupt signals - edge/level detectors
         if (cpu.IRQ_signal)
@@ -73,10 +87,6 @@ void NES::run() {
         else
             cpu.NMI = false;
 
-
-        if (stepMode) {
-            cpu.cpu_dump();
-        }
 
     }
 

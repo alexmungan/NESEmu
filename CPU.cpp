@@ -14,10 +14,19 @@ CPU::CPU() {
     opMatrix[0x38].addressing_mode = IMP;
     opMatrix[0x38].cycle_op_list.push_back(&CPU::SEC_cycle2);
     opMatrix[0x38].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //RTI
+    opMatrix[0x40].pneumonic = "RTI";
+    opMatrix[0x40].addressing_mode = IMP;
+    opMatrix[0x40].cycle_op_list.push_back(&CPU::RTI_cycle2);
+    opMatrix[0x40].cycle_op_list.push_back(&CPU::RTI_cycle3);
+    opMatrix[0x40].cycle_op_list.push_back(&CPU::RTI_cycle4);
+    opMatrix[0x40].cycle_op_list.push_back(&CPU::RTI_cycle5);
+    opMatrix[0x40].cycle_op_list.push_back(&CPU::RTI_cycle6);
+    opMatrix[0x40].cycle_op_list.push_back(&CPU::fetch_opcode);
     //JMP ABS
     opMatrix[0x4C].pneumonic = "JMP";
     opMatrix[0x4C].addressing_mode = ABS;
-    opMatrix[0x4C].cycle_op_list.push_back(&CPU::ABS_cycle2);
+    opMatrix[0x4C].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x4C].cycle_op_list.push_back(&CPU::JMP_ABS_cycle3);
     opMatrix[0x4C].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CLI
@@ -55,6 +64,24 @@ CPU::CPU() {
     opMatrix[0xA2].addressing_mode = IMM;
     opMatrix[0xA2].cycle_op_list.push_back(&CPU::LDX_IMM_cycle2);
     opMatrix[0xA2].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDY ZP
+    opMatrix[0xA4].pneumonic = "LDY";
+    opMatrix[0xA4].addressing_mode = ZP;
+    opMatrix[0xA4].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xA4].cycle_op_list.push_back(&CPU::LDY_fetch_data);
+    opMatrix[0xA4].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDA ZP
+    opMatrix[0xA5].pneumonic = "LDA";
+    opMatrix[0xA5].addressing_mode = ZP;
+    opMatrix[0xA5].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xA5].cycle_op_list.push_back(&CPU::LDA_fetch_data);
+    opMatrix[0xA5].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDX ZP
+    opMatrix[0xA6].pneumonic = "LDX";
+    opMatrix[0xA6].addressing_mode = ZP;
+    opMatrix[0xA6].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xA6].cycle_op_list.push_back(&CPU::LDX_fetch_data);
+    opMatrix[0xA6].cycle_op_list.push_back(&CPU::fetch_opcode);
     //TAY
     opMatrix[0xA8].pneumonic = "TAY";
     opMatrix[0xA8].addressing_mode = IMP;
@@ -70,6 +97,48 @@ CPU::CPU() {
     opMatrix[0xAA].addressing_mode = IMP;
     opMatrix[0xAA].cycle_op_list.push_back(&CPU::TAX_cycle2);
     opMatrix[0xAA].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDY ABS
+    opMatrix[0xAC].pneumonic = "LDY";
+    opMatrix[0xAC].addressing_mode = ABS;
+    opMatrix[0xAC].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xAC].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0xAC].cycle_op_list.push_back(&CPU::LDY_fetch_data);
+    opMatrix[0xAC].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDA ABS
+    opMatrix[0xAD].pneumonic = "LDA";
+    opMatrix[0xAD].addressing_mode = ABS;
+    opMatrix[0xAD].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xAD].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0xAD].cycle_op_list.push_back(&CPU::LDA_fetch_data);
+    opMatrix[0xAD].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDX ABS
+    opMatrix[0xAD].pneumonic = "LDX";
+    opMatrix[0xAD].addressing_mode = ABS;
+    opMatrix[0xAD].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xAD].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0xAD].cycle_op_list.push_back(&CPU::LDX_fetch_data);
+    opMatrix[0xAD].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDY ZP,X
+    opMatrix[0xB4].pneumonic = "LDY";
+    opMatrix[0xB4].addressing_mode = ZPX;
+    opMatrix[0xB4].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xB4].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0xB4].cycle_op_list.push_back(&CPU::LDY_fetch_data);
+    opMatrix[0xB4].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDA ZP,X
+    opMatrix[0xB5].pneumonic = "LDA";
+    opMatrix[0xB5].addressing_mode = ZPX;
+    opMatrix[0xB5].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xB5].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0xB5].cycle_op_list.push_back(&CPU::LDA_fetch_data);
+    opMatrix[0xB5].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDX ZP,Y
+    opMatrix[0xB6].pneumonic = "LDX";
+    opMatrix[0xB6].addressing_mode = ZPY;
+    opMatrix[0xB6].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xB6].cycle_op_list.push_back(&CPU::ZP_Y_cycle3);
+    opMatrix[0xB6].cycle_op_list.push_back(&CPU::LDX_fetch_data);
+    opMatrix[0xB6].cycle_op_list.push_back(&CPU::fetch_opcode);
     //TSX
     opMatrix[0xBA].pneumonic = "TSX";
     opMatrix[0xBA].addressing_mode = IMP;
@@ -93,17 +162,39 @@ CPU::CPU() {
 
     /** 3 interrupt sequences **/
     //Note: these are not really opcodes/instruction, they are just stored here for programming convenience
-    opMatrix[RESET].pneumonic = "RESET";
-    opMatrix[RESET].addressing_mode = INTERRUPT;
-    opMatrix[RESET].cycle_op_list.push_back(&CPU::waste_cycle);
-    opMatrix[RESET].cycle_op_list.push_back(&CPU::waste_cycle);
-    opMatrix[RESET].cycle_op_list.push_back(&CPU::waste_cycle);
-    opMatrix[RESET].cycle_op_list.push_back(&CPU::waste_cycle);
-    opMatrix[RESET].cycle_op_list.push_back(&CPU::waste_cycle);
-    opMatrix[RESET].cycle_op_list.push_back(&CPU::fetch_RESET_vector_LSB);
-    opMatrix[RESET].cycle_op_list.push_back(&CPU::fetch_RESET_vector_MSB);
-    opMatrix[RESET].cycle_op_list.push_back(&CPU::fetch_opcode);
-
+    //RESET
+    opMatrix[RESET_opcode].pneumonic = "RESET";
+    opMatrix[RESET_opcode].addressing_mode = INTERRUPT;
+    opMatrix[RESET_opcode].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[RESET_opcode].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[RESET_opcode].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[RESET_opcode].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[RESET_opcode].cycle_op_list.push_back(&CPU::waste_cycle);
+    opMatrix[RESET_opcode].cycle_op_list.push_back(&CPU::fetch_RESET_vector_LSB);
+    opMatrix[RESET_opcode].cycle_op_list.push_back(&CPU::fetch_RESET_vector_MSB);
+    opMatrix[RESET_opcode].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //NMI
+    opMatrix[NMI_opcode].pneumonic = "NMI";
+    opMatrix[NMI_opcode].addressing_mode = INTERRUPT;
+    opMatrix[NMI_opcode].cycle_op_list.push_back(&CPU::interrupt_seq_cycle1);
+    opMatrix[NMI_opcode].cycle_op_list.push_back(&CPU::interrupt_seq_cycle2);
+    opMatrix[NMI_opcode].cycle_op_list.push_back(&CPU::interrupt_seq_cycle3);
+    opMatrix[NMI_opcode].cycle_op_list.push_back(&CPU::interrupt_seq_cycle4);
+    opMatrix[NMI_opcode].cycle_op_list.push_back(&CPU::interrupt_seq_cycle5);
+    opMatrix[NMI_opcode].cycle_op_list.push_back(&CPU::NMI_cycle6);
+    opMatrix[NMI_opcode].cycle_op_list.push_back(&CPU::NMI_cycle7);
+    opMatrix[NMI_opcode].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //IRQ
+    opMatrix[IRQ_opcode].pneumonic = "IRQ";
+    opMatrix[IRQ_opcode].addressing_mode = INTERRUPT;
+    opMatrix[IRQ_opcode].cycle_op_list.push_back(&CPU::interrupt_seq_cycle1);
+    opMatrix[IRQ_opcode].cycle_op_list.push_back(&CPU::interrupt_seq_cycle2);
+    opMatrix[IRQ_opcode].cycle_op_list.push_back(&CPU::interrupt_seq_cycle3);
+    opMatrix[IRQ_opcode].cycle_op_list.push_back(&CPU::interrupt_seq_cycle4);
+    opMatrix[IRQ_opcode].cycle_op_list.push_back(&CPU::interrupt_seq_cycle5);
+    opMatrix[IRQ_opcode].cycle_op_list.push_back(&CPU::IRQ_cycle6);
+    opMatrix[IRQ_opcode].cycle_op_list.push_back(&CPU::IRQ_cycle7);
+    opMatrix[IRQ_opcode].cycle_op_list.push_back(&CPU::fetch_opcode);
 }
 
 CPU::~CPU() {
@@ -248,29 +339,12 @@ void CPU::fetch_opcode() {
     curr_micro_op = 0;
 }
 
-uint8_t CPU::fetch_operand_1byte() {
-    //operand_1byte = read(PC);
-    PC++;
-    curr_micro_op++;
-    return 1;
-}
-
-uint8_t CPU::fetch_operand_2byte_LSB() {
-    //operand_2byte = read(PC);
-    PC++;
-    curr_micro_op++;
-    return 1;
-}
-
-uint8_t CPU::fetch_operand_2byte_MSB() {
-    //operand_2byte += (static_cast<uint16_t>(read(PC)) << static_cast<uint16_t>(8));
-    PC++;
-    curr_micro_op++;
-    return 1;
-}
-
 void CPU::dummy_read() {
     read(PC);
+}
+
+void CPU::dummy_read(uint16_t address) {
+    read(address);
 }
 
 void CPU::waste_cycle() {
@@ -281,149 +355,32 @@ void CPU::waste_cycle() {
 /****/
 
 /** Addressing Modes **/
-void CPU::ABS_cycle2() {
-    operand_byte1 = read(PC++);
+void CPU::fetch_adl_cycle2() {
+    addr1 = static_cast<uint16_t>(read(PC++));
     if (overlap_op2 != nullptr)
         (this->*overlap_op2)();
     curr_micro_op++;
     interrupt_poll_cycle = false;
 }
 
-/** Addressing Modes **/
-
-uint8_t CPU::set_working_data_immediate() {
-    //working_data = operand_1byte;
+void CPU::fetch_adh_cycle3() {
+    addr1 |= (static_cast<uint16_t>(read(PC++)) << 8);
     curr_micro_op++;
-    return 0;
+    interrupt_poll_cycle = false;
 }
 
-uint8_t CPU::set_working_data_zero_page() {
-    //working_data = read(operand_1byte);
+void CPU::ZP_X_cycle3() {
+    dummy_read();
+    addr1 += X; //Automatically performs 8 bit wrapping
     curr_micro_op++;
-    return 1;
+    interrupt_poll_cycle = false;
 }
 
-uint8_t CPU::set_working_data_zero_page_X() {
-    //uint8_t zp_addr = operand_1byte + X;
-    //working_data = read(zp_addr);
+void CPU::ZP_Y_cycle3() {
+    dummy_read();
+    addr1 += Y;
     curr_micro_op++;
-    return 1;
-}
-
-uint8_t CPU::set_working_data_absolute() {
-    //working_data = read(operand_2byte);
-    curr_micro_op++;
-    return 1;
-}
-
-uint8_t CPU::set_working_data_absolute_X_1() {
-    //uint16_t abs_addr = operand_2byte + X;
-    //if((operand_2byte & 0xFF00) != (abs_addr & 0xFF00)) {
-        //Page crossed! Extra cycle needed
-        //operand_2byte = abs_addr;
-        dummy_read();
-        return 1;
-    //} else { //Page not crossed, skip the next micro_op
-        //working_data = read(abs_addr);
-        //instr_remaining_cycles -= 2; //We have to get rid of an extra cycle b/c we assumed instruction would take 5 cycles, but only takes 4
-        curr_micro_op += 2; //Skip over next micro op
-        return 1;
-    //}
-
-}
-
-uint8_t CPU::set_working_data_absolute_X_2() {
-    //working_data = read(operand_2byte); //Note: operand_2byte will have had X already added to it in set_working_data_absolute_X_1()
-    //instr_remaining_cycles--;
-    curr_micro_op++;
-    return 1;
-}
-
-uint8_t CPU::set_working_data_absolute_Y_1() {
-    //uint16_t abs_addr = operand_2byte + Y;
-    //if((operand_2byte & 0xFF00) != (abs_addr & 0xFF00)) {
-        //Page crossed! Extra cycle needed
-        //operand_2byte = abs_addr;
-        dummy_read();
-        return 1;
-    //} else { //Page not crossed, skip the next micro_op
-        //working_data = read(abs_addr);
-        //instr_remaining_cycles -= 2; //We have to get rid of an extra cycle b/c we assumed instruction would take 5 cycles, but only takes 4
-        curr_micro_op += 2; //Skip over next micro op
-        return 1;
-    //}
-}
-
-uint8_t CPU::set_working_data_absolute_Y_2() {
-    //working_data = read(operand_2byte); //Note: operand_2byte will have had Y already added to it in set_working_data_absolute_Y_1()
-    //instr_remaining_cycles--;
-    curr_micro_op++;
-    return 1;
-}
-
-uint8_t CPU::set_working_data_indexed_indirect_1() {
-    //operand_1byte += X; //uint8_t wraps mod 256
-    //operand_2byte = read(operand_1byte); //LSB
-    //instr_remaining_cycles--;
-    curr_micro_op++;
-    return 1;
-}
-
-uint8_t CPU::set_working_data_indexed_indirect_2() {
-    //uint8_t msb_addr = operand_1byte + 1; //ensure 8 bit wrapping mod 256
-    //operand_2byte += (read(msb_addr) << 8);
-    //instr_remaining_cycles--;
-    curr_micro_op++;
-    return 1;
-}
-
-uint8_t CPU::set_working_data_indexed_indirect_3() {
-    //working_data = read(operand_2byte);
-    //instr_remaining_cycles--;
-    curr_micro_op++;
-    return 1;
-}
-
-uint8_t CPU::set_working_data_indirect_indexed_1() {
-    //operand_2byte = read(operand_1byte);
-    //instr_remaining_cycles--;
-    curr_micro_op++;
-    return 1;
-}
-
-uint8_t CPU::set_working_data_indirect_indexed_2() {
-    //uint8_t msb_addr = operand_1byte + 1; //ensure 8 bit wrapping mod 256
-    //operand_2byte += (read(msb_addr) << 8);
-    //instr_remaining_cycles--;
-    curr_micro_op++;
-    return 1;
-}
-
-uint8_t CPU::set_working_data_indirect_indexed_3() {
-    //uint16_t final_addr = operand_2byte + Y;
-    //if((operand_2byte & 0xFF00) != (final_addr & 0xFF00)) {
-        //Page crossed! Extra cycle needed
-        //operand_2byte = final_addr;
-        dummy_read();
-        return 1;
-    //} else { //Page not crossed, skip the next micro_op
-        //working_data = read(final_addr);
-        //instr_remaining_cycles -= 2; //We have to get rid of an extra cycle b/c we skip an operation that takes 1 cycle that we assummed would happen
-        curr_micro_op += 2; //Skip over next micro op
-        return 1;
-    //}
-}
-
-uint8_t CPU::set_working_data_indirect_indexed_4() {
-    //working_data = read(operand_2byte); //Note: operand_2byte will have had Y already added to it in set_working_data_indirect_indexed_3()
-    //instr_remaining_cycles--;
-    curr_micro_op++;
-    return 1;
-}
-
-uint8_t CPU::copy_operand1to2() {
-    //operand_2byte = operand_1byte;
-    return 0;
+    interrupt_poll_cycle = false;
 }
 
 /** Data Movement (access) **/
@@ -432,6 +389,15 @@ void CPU::LDA_IMM_cycle2() {
 
     if (overlap_op2 != nullptr)
         (this->*overlap_op2)();
+
+    overlap_op1 = &CPU::load_A;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::LDA_fetch_data() {
+    working_data = read(addr1);
 
     overlap_op1 = &CPU::load_A;
     overlap_op2 = nullptr;
@@ -467,6 +433,15 @@ void CPU::LDX_IMM_cycle2() {
     curr_micro_op++;
 }
 
+void CPU::LDX_fetch_data() {
+    working_data = read(addr1);
+
+    overlap_op1 = &CPU::load_X;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
 void CPU::load_X() {
     X = working_data;
 
@@ -488,6 +463,15 @@ void CPU::LDY_IMM_cycle2() {
 
     if (overlap_op2 != nullptr)
         (this->*overlap_op2)();
+
+    overlap_op1 = &CPU::load_Y;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::LDY_fetch_data() {
+    working_data = read(addr1);
 
     overlap_op1 = &CPU::load_Y;
     overlap_op2 = nullptr;
@@ -743,14 +727,23 @@ uint8_t CPU::AND() {
 
 /** Jump Instructions **/
 void CPU::JMP_ABS_cycle3() {
-    operand_byte2 = read(PC++);
-
-    PC = (static_cast<uint16_t>(operand_byte2) << 8) | operand_byte1;
+    addr1 |= (static_cast<uint16_t>(read(PC++)) << 8);
+    PC = addr1;
 
     overlap_op1 = nullptr;
     overlap_op2 = nullptr;
     interrupt_poll_cycle = true;
     curr_micro_op++;
+}
+
+/** Stack **/
+void CPU::push(uint16_t& address, uint8_t val) {
+    write(address, val);
+    address--;
+}
+
+uint8_t CPU::pull(uint16_t& address) {
+    return read(address++);
 }
 
 /** Interrupts **/
@@ -771,7 +764,136 @@ void CPU::fetch_RESET_vector_MSB() {
     curr_micro_op++;
 }
 
+void CPU::interrupt_seq_cycle1() {
+    std::cout <<"HERE\n";
+    dummy_read();
 
+    if (overlap_op1 != nullptr)
+        (this->*overlap_op1)();
 
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
 
+void CPU::interrupt_seq_cycle2() {
+    std::cout <<"HERE\n";
+    dummy_read();
+
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::interrupt_seq_cycle3() {
+    auto pch = static_cast<uint8_t>((PC & 0xFF00) >> 8);
+    addr1 = STACK_START + SP;
+    push(addr1, pch); //SP-- (really addr1 internally for now)
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::interrupt_seq_cycle4() {
+    auto pcl = static_cast<uint8_t>(PC & 0x00FF);
+    push(addr1, pcl); //SP-- (really addr1 internally for now)
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::interrupt_seq_cycle5() {
+    push(addr1, status_reg); //SP-- (really addr1 internally for now)
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::IRQ_cycle6() {
+    SP = addr1; //Store SP
+    addr1 = static_cast<uint16_t>(read(0xFFFE));
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::IRQ_cycle7() {
+    auto MSB = static_cast<uint16_t>(read(0xFFFF));
+    addr1 |= (MSB << 8);
+    PC = addr1;
+
+    setStatusReg(true, I);
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::NMI_cycle6() {
+    SP = addr1; //Store SP
+    addr1 = static_cast<uint16_t>(read(0xFFFA));
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::NMI_cycle7() {
+    auto MSB = static_cast<uint16_t>(read(0xFFFB));
+    addr1 |= (MSB << 8);
+    PC = addr1;
+
+    setStatusReg(true, I);
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::RTI_cycle2() {
+    dummy_read();
+
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::RTI_cycle3() {
+    dummy_read(STACK_START + SP);
+    addr1 = (STACK_START + SP + 1); //SP++
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::RTI_cycle4() {
+    working_data = pull(addr1); //SP++, pull P
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::RTI_cycle5() {
+    addr2 = static_cast<uint16_t>(pull(addr1)); //SP++, pull PCL
+    status_reg = working_data; //Restore P actually happens this cycle
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::RTI_cycle6() {
+    SP = addr1; //Store SP (before this cycles increment in pull call)
+    addr2 |= static_cast<uint16_t>(pull(addr1)) << 8; //pull PCH
+    PC = addr2;
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+
+    curr_micro_op++;
+    interrupt_poll_cycle = true;
+}
 

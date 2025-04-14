@@ -37,12 +37,12 @@ public:
 
     /** Interrupt poll status **/
     //Holds whether the interrupt signals were detected last cycle
-    bool IRQ;
-    bool NMI;
+    bool IRQ = false;
+    bool NMI = false;
     //Holds whether the interrupt signals (for each type) have occurred that cycle
-    bool RESET_signal;
-    bool IRQ_signal;
-    bool NMI_signal;
+    bool RESET_signal = false;
+    bool IRQ_signal = false;
+    bool NMI_signal = false;
 
     //Helper functions
     //Set some bit in status register to 0 or 1
@@ -50,8 +50,8 @@ public:
     bool getStatusReg(Flags flag);
 
     uint16_t opcode = 0x00; //Is 16 bits rather than 8 b/c I added extra "opcodes" to the instr table for interrupt sequences
-    uint8_t operand_byte1 = 0x00; //Holds the first byte after opcode
-    uint8_t operand_byte2 = 0x0000; //Holds the 2nd byte after opcode
+    uint16_t addr1 = 0x00;
+    uint16_t addr2 = 0x00; //Used for addressing modes w/ extra layer of indirection
     uint8_t working_data = 0x00; //Holds the value that will be used by instruction after addressing mode stuff has been handled, it may also hold an ALU result (for ADC instr for ex) but we must be careful not to modify working_data before storing this ALU result to A
     uint8_t curr_micro_op = 0;
     bool interrupt_poll_cycle = false; //Is set to true on the cycle where interrupt polling occurs (normally last cycle of an instruction)
@@ -100,15 +100,9 @@ public:
     //Sets instruction related state variables such as opcode, curr_micro_op, ... TODO
     void fetch_opcode();
 
-    //Fetches the next byte at PRG-ROM to get the operand to the instruction
-    //This is used for addressing modes: IMM, TODO
-    uint8_t fetch_operand_1byte();
-    //This is used for addressing modes: absolute, TODO
-    uint8_t fetch_operand_2byte_LSB();
-    uint8_t fetch_operand_2byte_MSB();
-
     //Performs dummy read
     void dummy_read();
+    void dummy_read(uint16_t address);
 
     //Wastes a cycle doing nothing - only used during RESET interrupt sequence b/c some of those cycles do unimportant stuff
     //Gonna set the I flag here, again it doesn't really matter which cycle we do it during the sequence since interrupt polling is not done during interrupt sequnces
@@ -116,75 +110,83 @@ public:
     void waste_cycle();
 
     /** Addressing mode functions **/
-    //Cycle 2 fetches the next instruction byte into operand_byte1 and increments PC
-    void ABS_cycle2();
+    //Cycle 2 fetches the next instruction byte (which is the lsb of an address), PC++
+    void fetch_adl_cycle2();
+    //Cycle 3 fetches the next instruction byte (which is the msb of an address), PC++
+    void fetch_adh_cycle3();
 
-    /** Addressing mode functions **/
-    //Immediate mode: the 1 byte fetched after the opcode is the working data
-    uint8_t set_working_data_immediate();
-
-    //Zero page: the 1 byte fetched after the opcode is an address into the zero page, the value at this address is the working adata
-    uint8_t set_working_data_zero_page();
-
-    //Zero page X: the 1 bytes feteched after the opcode is an address into zp, add X to zero page address and the value at this address is working data
-    uint8_t set_working_data_zero_page_X();
-
-    //Absolute: the 2 bytes feteched after opcode form absolute address, the value found there is working data
-    uint8_t set_working_data_absolute();
-
-    //Abs X: the 2 bytes feteched after opcode form abs address and then X is added, the value at the resulting addr is working data
-    //Note: the second function is only used if there is a page cross, requiring and extra cycle
-    uint8_t set_working_data_absolute_X_1();
-    uint8_t set_working_data_absolute_X_2();
-
-    //Abs Y: same as abs X but Y register is used
-    uint8_t set_working_data_absolute_Y_1();
-    uint8_t set_working_data_absolute_Y_2();
-
-    //Indexed indirect: the 1 byte fetched with X added to it is the address to the
-    //LSB of another address, the MSB is at the next address.
-    //Both combined form the address of the working_data
-    //Fetch LSB
-    uint8_t set_working_data_indexed_indirect_1();
-    //Fetch MSB to form full address
-    uint8_t set_working_data_indexed_indirect_2();
-    //Get data from full address
-    uint8_t set_working_data_indexed_indirect_3();
-
-    //Indirect Indexed: the 1 byte fetched is used to get LSB
-    //MSB is at the next address, combine both to get full address
-    //Add Y to address, then fetch data from final computed address
-    //Get LSB
-    uint8_t set_working_data_indirect_indexed_1();
-    //Get MSB, combine LSB and MSB
-    uint8_t set_working_data_indirect_indexed_2();
-    //Add Y to address and access data, if adding causes page boundary to be crossed, access happen in part 4
-    uint8_t set_working_data_indirect_indexed_3();
-    //Access data from final address
-    uint8_t set_working_data_indirect_indexed_4();
-
-    //
-    uint8_t copy_operand1to2();
+    //Cycle 3 takes a ZP addr fetched during cycle 2 and adds X to it, dummy read occurs
+    void ZP_X_cycle3();
+    void ZP_Y_cycle3();
 
     /** Data Movement (access ops)**/
     //LDA IMM
     //Cycle 1: fetch OP CODE and finish previous op (overlap_op1), PC++
-    //Cycle 2: fetch next instr byte, decode OP CODE, PC++
+    //Cycle 2: fetch next instr byte (imm value), decode OP CODE, PC++
     //check overlap_op2 to see if prev instr still needs internal operation to be done
     void LDA_IMM_cycle2();
     //Cycle 3 (start of next instr): fetch next OP CODE and finish LDA IMM (A <- IMM val), PC++
     //This cycle 3 could also be the first cycle of an interrupt sequence
     void load_A(); //This is the operation that is overlapped with cycle 3
 
+    //LDA ZP
+    //Cycle 1: fetch OP CODE and finish prev op (overlap_op1), PC++
+    //fetch_opcode()
+    //Cycle 2: fetch next instr byte (ZP addr), decode OP CODE, PC++
+    //void fetch_adl_cycle2()
+    //check overlap_op2 to see if prev instr still needs internal operation to be done
+    //Cycle 3: fetch data from ZP addr, poll for interrupts
+    void LDA_fetch_data();
+    //Cycle 4(start of next instr): fetch next OP CODE and finish LDA ZP (A <- data), PC++
+    //This cycle 4 could also be the first cycle of an interrupt sequence
+
+    //LDA ZP, X
+    //cycle 1: fetch_opcode()
+    //cycle 2: fetch_adl_cycle2()
+    //cycle 3: dummy read, add X to the fetched ZP addr in cycle 2
+    //void ZP_X_cycle3()
+    //cycle 4: fetch data from ZP+X, poll for interrupts
+    //void LDA_ZP_fetch_data();
+    //Cycle 5 (start of next instr): fetch next OP CODE and finish LDA ZP,X (A <- data), flags set, PC++
+
+    //LDA ABS
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: fetch next instr byte (MSB of abs addr), decode OP CODE, PC++
+    //void fetch_adh_cycle3();
+    //Cycle 4: fetch data from abs addr, poll for interrupts
+    //void LDA_fetch_data();
+    //Cycle 5 (start of next instr): fetch next OP CODE and finish LDA ABS (A <- data), flags set, PC++
+
     //LDX IMM
     //Same as LDA IMM but for X reg
     void LDX_IMM_cycle2();
     void load_X();
 
+    //LDX ZP
+    //Same as LDA ZP but for X
+    void LDX_fetch_data();
+
+    //LDX ZP, Y
+    //Same as LDA ZP X but Y is used to index and result is put in X
+    //void ZP_Y_cycle3();
+    //void LDX_ZP_fetch_data();
+
+    //LDX ABS
+    //Same as LDA ABS but for X
+
     //LDY IMM
     //Same as LDA IMM but for Y reg
     void LDY_IMM_cycle2();
     void load_Y();
+
+    //LDY ZP
+    //Same as LDA ZP but for Y
+    void LDY_fetch_data();
+
+    //LDY ZP X
+    //Same as LDA ZP X but for Y result
+    //void LDY_fetch_data();
 
     /** Data Movement (transfer ops) **/
     //TAX
@@ -272,18 +274,60 @@ public:
     //JMP Abs
     //Cycle 1: fetch OP CODE and finish prev op (overlap_op1), PC++
     //Cycle 2: fetch adl, decode OP CODE, PC++, check overlap_op2
-    //void ABS_cycle2();
+    //void fetch_adl_cycle2();
     //Cycle 3: fetch adh, PC <-- adh, adl, poll for interrupts
     void JMP_ABS_cycle3();
     //Cycle 4 (start of next instr): fetch next OP CODE, no overlapped op, PC++
 
+    /** Stack **/
+    //Helper function to push value onto stack
+    void push(uint16_t& address, uint8_t val);
+    uint8_t pull(uint16_t& address);
+
     /** Interrupt Sequences **/
+    /* Note: We do not poll for interrupts during interrupt sequences */
     //RESET
     //Cycles 1-5: don't really matter it seems
     //Cycle 6: Fetch address of RESET handler
     void fetch_RESET_vector_LSB();
     //Cycle 7: Fetch address of RESET handler
     void fetch_RESET_vector_MSB();
+
+    //IRQ
+    //Cycle 1: dummy read and finish prev op (overlap_op1)
+    void interrupt_seq_cycle1();
+    //Cycle 2: dummy read, check overlap_op2
+    void interrupt_seq_cycle2();
+    //Cycle 3: Push PCH, SP--
+    void interrupt_seq_cycle3();
+    //Cycle 4: Push PCL, SP--
+    void interrupt_seq_cycle4();
+    //Cycle 5: Push status reg, SP--
+    void interrupt_seq_cycle5();
+    //Cycle 6: Fetch address (LSB) of IRQ handler at $FFFE
+    void IRQ_cycle6();
+    //Cycle 7: Fetch address (MSB) of IRQ handler at $FFFF, set PC to IRQ handler, SET I <- 1
+    void IRQ_cycle7();
+    //Cycle 8 (1rst instr of handler): fetch_opcode
+
+    //NMI
+    //Has the same sequence as IRQ except that handler is at $FFFA - $FFFB
+    void NMI_cycle6();
+    void NMI_cycle7();
+
+    //RTI
+    //Cycle 1: fetch_opcode() (finish prev op - overlap_op1, PC++)
+    //Cycle 2: dummy_read(), decode OP CODE, check overlap_op2
+    void RTI_cycle2();
+    //Cycle 3: dummy read the stack, sp++
+    void RTI_cycle3();
+    //Cycle 4: pull P from the stack, sp++
+    void RTI_cycle4();
+    //Cycle 5: pull PCL from the stack, sp++, restore P register with fetched val from cycle 4
+    void RTI_cycle5();
+    //Cycle 6: pull PCH from the stack, update PC, poll for interrupts
+    void RTI_cycle6();
+    //Cycle 7 (start of next instr): fetch_opcode()
 
 };
 

@@ -9,7 +9,7 @@
 .segment "CHARS"
 
 .segment "VECTORS"
-  .addr 0
+  .addr nmi
   .addr reset
   .addr 0
 
@@ -22,10 +22,11 @@ reset:
   cli
   jmp Main
 Main:
-  lda #$00
-  lda #$83
-  tay
-  sec
-  txa
+  ldx #$02
+  lda $10,X ; load value $83 into A
 @endlessLoop:
   jmp @endlessLoop
+
+nmi:
+  tay
+  rti

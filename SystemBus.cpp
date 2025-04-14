@@ -35,6 +35,10 @@ void SystemBus::write(uint16_t address, uint8_t data) {
                 << ", W, "
                 << getMemSpaceString(address)
                 << "): $"
+                << std::hex
+                << std::uppercase
+                << std::setw(2)
+                << std::setfill('0')
                 << (int)data
                 << "\n";
     }
@@ -57,6 +61,10 @@ uint8_t SystemBus::read(uint16_t address) {
                 << ", R, "
                 << getMemSpaceString(address)
                 << "): $"
+                << std::hex
+                << std::uppercase
+                << std::setw(2)
+                << std::setfill('0')
                 << (int)data
                 << "\n";
     }
