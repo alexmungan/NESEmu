@@ -137,7 +137,7 @@ public:
     //Cycle 4: uses ZP+1 indirect address to access mem and obtain msb of BASE address (which may have a carry added to it if a page cross occurs when adding Y to lsb of BASE)
     void IND_Y_cycle4();
 
-    /** Data Movement (access ops)**/
+    /** Data Movement (load ops)**/
     //LDA IMM
     //Cycle 1: fetch OP CODE and finish previous op (overlap_op1), PC++
     //Cycle 2: fetch next instr byte (imm value), decode OP CODE, PC++
@@ -233,6 +233,20 @@ public:
     void LDY_IMM_cycle2();
     void load_Y();
     void LDY_fetch_data();
+
+    /** Data Movement (store ops) **/
+    //STA ZP
+    //Cycle 1: fetch_opcode
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: store A to mem at ZP, poll for interrupts
+    void store_A();
+    //No pipeline / overlap with next instr's fetch
+
+    //STX instructions: similar to STA but for X
+    void store_X();
+
+    //STY instructions: similar to STA but for Y
+    void store_Y();
 
     /** Data Movement (transfer ops) **/
     //TAX

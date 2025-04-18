@@ -39,6 +39,24 @@ CPU::CPU() {
     opMatrix[0x78].addressing_mode = IMP;
     opMatrix[0x78].cycle_op_list.push_back(&CPU::SEI_cycle2);
     opMatrix[0x78].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //STY ZP
+    opMatrix[0x84].pneumonic = "STY";
+    opMatrix[0x84].addressing_mode = ZP;
+    opMatrix[0x84].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x84].cycle_op_list.push_back(&CPU::store_Y);
+    opMatrix[0x84].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //STA ZP
+    opMatrix[0x85].pneumonic = "STA";
+    opMatrix[0x85].addressing_mode = ZP;
+    opMatrix[0x85].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x85].cycle_op_list.push_back(&CPU::store_A);
+    opMatrix[0x85].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //STX ZP
+    opMatrix[0x86].pneumonic = "STX";
+    opMatrix[0x86].addressing_mode = ZP;
+    opMatrix[0x86].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x86].cycle_op_list.push_back(&CPU::store_X);
+    opMatrix[0x86].cycle_op_list.push_back(&CPU::fetch_opcode);
     //TXA
     opMatrix[0x8A].pneumonic = "TXA";
     opMatrix[0x8A].addressing_mode = IMP;
@@ -610,6 +628,34 @@ void CPU::load_Y() {
         setStatusReg(true, N);
     else
         setStatusReg(false, N);
+}
+
+/** Data Movement (store ops) **/
+void CPU::store_A() {
+    write(addr1, A);
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::store_X() {
+    write(addr1, X);
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::store_Y() {
+    write(addr1, Y);
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
 }
 
 /** Data Movement (transfer) **/
