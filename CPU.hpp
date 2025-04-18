@@ -132,6 +132,11 @@ public:
     //Cycle 5 uses ZP+X+1 ind address to access mem and obtain msb of address to final data
     void IND_X_cycle5();
 
+    //Cycle 3: uses ZP indirect address to access mem and obtain lsb of BASE address (Y will be added to the base in a later cycle)
+    void IND_Y_cycle3();
+    //Cycle 4: uses ZP+1 indirect address to access mem and obtain msb of BASE address (which may have a carry added to it if a page cross occurs when adding Y to lsb of BASE)
+    void IND_Y_cycle4();
+
     /** Data Movement (access ops)**/
     //LDA IMM
     //Cycle 1: fetch OP CODE and finish previous op (overlap_op1), PC++
@@ -200,6 +205,24 @@ public:
     //Cycle 6: fetch data using adh,adl
     //LDA_fetch_data()
     //Cycle 7 (strat of next instr): fetch next opcode, A <- data, flags set, PC++
+
+    //LDA (Indirect),Y i.e. postindexed
+    //Cycle 1: fetch_opcode
+    //Cycle 2: fetch_adl_cycle2()
+    //cycle 3: fetch the adl stored at the ZP address
+    //void IND_Y_cycle3()
+    //Cycle 4: fetch adh stored at ZP+1, add Y to adl
+    //void IND_Y_cycle4()
+    //Assume page boundary crossed
+    //Cycle 5: dummy read mem(adh,adl+Y), add carry to adh
+    //page_crossed_cycle()
+    //Cycle 6: fetch data at mem(adh+1,adl+Y)
+    //LDA_fetch_data()
+    //Cycle 7 (start of next instr): fetch next opcode, A <- data, flags set, PC++
+    //If page boundary wasn't crossed
+    //Cycle 5: fetch data at mem(adh,adl+Y)
+    //LDA_fetch_data()
+    //Cycle 6 (start of next instr): fetch next opcode, A <- data, flags set, PC++
 
     //LDX, same as LDA but for X
     void LDX_IMM_cycle2();

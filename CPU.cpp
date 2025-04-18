@@ -127,6 +127,15 @@ CPU::CPU() {
     opMatrix[0xAE].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0xAE].cycle_op_list.push_back(&CPU::LDX_fetch_data);
     opMatrix[0xAE].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDA INDY
+    opMatrix[0xB1].pneumonic = "LDA";
+    opMatrix[0xB1].addressing_mode = INDY;
+    opMatrix[0xB1].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xB1].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
+    opMatrix[0xB1].cycle_op_list.push_back(&CPU::IND_Y_cycle4);
+    opMatrix[0xB1].cycle_op_list.push_back(&CPU::page_crossed_cycle);
+    opMatrix[0xB1].cycle_op_list.push_back(&CPU::LDA_fetch_data);
+    opMatrix[0xB1].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDY ZP,X
     opMatrix[0xB4].pneumonic = "LDY";
     opMatrix[0xB4].addressing_mode = ZPX;
@@ -465,6 +474,27 @@ void CPU::IND_X_cycle4() {
 void CPU::IND_X_cycle5() {
     addr2 |= (static_cast<uint16_t>(read(addr1+1)) << 8); //Fetch adh
     addr1 = addr2; //The next cycle (for whatever instr is using IND, X addressing) uses addr1
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::IND_Y_cycle3() {
+    addr2 = static_cast<uint16_t>(read(addr1)); //gives lsb of BASE address
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::IND_Y_cycle4() {
+    addr2 |= (static_cast<uint16_t>(read(addr1+1)) << 8); //fetch msb of base address
+    uint16_t old_addr2 = addr2;
+    addr2 += Y;
+
+    if ((old_addr2 & 0x0100) == (addr2 & 0x0100)) //page crossing did not occur
+        curr_micro_op++; //Extra incrementation to skip the dummy read that occurs in the extra cycle that occurs
+
+    addr1 = addr2;
 
     curr_micro_op++;
     interrupt_poll_cycle = false;
