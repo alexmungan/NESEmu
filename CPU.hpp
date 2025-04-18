@@ -242,6 +242,12 @@ public:
     void store_A();
     //No pipeline / overlap with next instr's fetch
 
+    //STA ZP,X
+    //Cycle 1: fetch_opcode
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: ZP_X_cycle3()
+    //Cycle 4: store_A
+
     //STX instructions: similar to STA but for X
     void store_X();
 
