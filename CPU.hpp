@@ -248,6 +248,12 @@ public:
     //Cycle 3: ZP_X_cycle3()
     //Cycle 4: store_A
 
+    //STA ABS
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: fetch_adh_cycle3()
+    //Cycle 4: store_A()
+
     //STX instructions: similar to STA but for X
     void store_X();
 

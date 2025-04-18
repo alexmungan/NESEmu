@@ -60,8 +60,29 @@ CPU::CPU() {
     //TXA
     opMatrix[0x8A].pneumonic = "TXA";
     opMatrix[0x8A].addressing_mode = IMP;
-    opMatrix[0x8a].cycle_op_list.push_back(&CPU::TXA_cycle2);
-    opMatrix[0x8a].cycle_op_list.push_back(&CPU::fetch_opcode);
+    opMatrix[0x8A].cycle_op_list.push_back(&CPU::TXA_cycle2);
+    opMatrix[0x8A].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //STY ABS
+    opMatrix[0x8C].pneumonic = "STY";
+    opMatrix[0x8C].addressing_mode = ABS;
+    opMatrix[0x8C].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x8C].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0x8C].cycle_op_list.push_back(&CPU::store_Y);
+    opMatrix[0x8C].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //STA ABS
+    opMatrix[0x8D].pneumonic = "STA";
+    opMatrix[0x8D].addressing_mode = ABS;
+    opMatrix[0x8D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x8D].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0x8D].cycle_op_list.push_back(&CPU::store_A);
+    opMatrix[0x8D].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //STX ABS
+    opMatrix[0x8E].pneumonic = "STX";
+    opMatrix[0x8E].addressing_mode = ABS;
+    opMatrix[0x8E].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x8E].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0x8E].cycle_op_list.push_back(&CPU::store_X);
+    opMatrix[0x8E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STY ZPX
     opMatrix[0x94].pneumonic = "STY";
     opMatrix[0x94].addressing_mode = ZPX;
