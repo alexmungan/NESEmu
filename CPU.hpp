@@ -119,6 +119,19 @@ public:
     void ZP_X_cycle3();
     void ZP_Y_cycle3();
 
+    //Cycle 3 fetches the next instr byte (msb of an address), while adding X to lsb, PC++
+    void ABS_X_cycle3();
+    void ABS_Y_cycle3();
+
+    //Might occur on different cycles for different addressing modes that page crossing may occur
+    //However, it never occurs on cycle 2 (where overlap_op2 is checked) or the last cycle, where interrupts are polled
+    void page_crossed_cycle();
+
+    //Cycle 4 uses ZP+X indirect address to access mem and obtain lsb of address to final data
+    void IND_X_cycle4();
+    //Cycle 5 uses ZP+X+1 ind address to access mem and obtain msb of address to final data
+    void IND_X_cycle5();
+
     /** Data Movement (access ops)**/
     //LDA IMM
     //Cycle 1: fetch OP CODE and finish previous op (overlap_op1), PC++
@@ -158,35 +171,45 @@ public:
     //void LDA_fetch_data();
     //Cycle 5 (start of next instr): fetch next OP CODE and finish LDA ABS (A <- data), flags set, PC++
 
-    //LDX IMM
-    //Same as LDA IMM but for X reg
+    //LDA ABS, X
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: fetch next instr byte (adh), add X to adl, PC++, If page boundary not crossed, curr_micro_op gets extra increment to skip over extra cycle
+    //void ABS_X_cycle3()
+    //Assuming Page boundary crossed
+    //Cycle 4: Dummy read at mem(adh, adl+X), add 1 to adh
+    //page_crossed_cycle()
+    //Cycle 5: LDA_fetch_data(), poll for interrupts
+    //Cycle 6 (start of next instr); fetch next opcode, A <-data, flags set, PC++
+    //If page boundary NOT crossed
+    //Cycle 4: LDA_fetch_data(), poll for interrupts
+    //Cycle 5 (start of next instr): fetch next opcode, A <- data, flags set, PC++
+
+    //LDA ABS,Y
+    //Same but for cycle 3 we need: void ABS_Y_cycle3()
+
+    //LDA (Indirect, X) i.e. preindexed
+    //Cycle 1: fetch_opcode
+    //Cycle 3: fetch_adl_cycle2()
+    //Cycle 3: Dummy read, add X to indirect ZP address
+    //ZP_X_cycle3()
+    //Cycle 4: fetch adl using indirect ZP+X address
+    //void IND_X_cycle4()
+    //Cycle 5: fetch adh using indirect ZP+X+1 address
+    //void IND_X_cycle5()
+    //Cycle 6: fetch data using adh,adl
+    //LDA_fetch_data()
+    //Cycle 7 (strat of next instr): fetch next opcode, A <- data, flags set, PC++
+
+    //LDX, same as LDA but for X
     void LDX_IMM_cycle2();
     void load_X();
-
-    //LDX ZP
-    //Same as LDA ZP but for X
     void LDX_fetch_data();
 
-    //LDX ZP, Y
-    //Same as LDA ZP X but Y is used to index and result is put in X
-    //void ZP_Y_cycle3();
-    //void LDX_ZP_fetch_data();
-
-    //LDX ABS
-    //Same as LDA ABS but for X
-
-    //LDY IMM
-    //Same as LDA IMM but for Y reg
+    //LDY instructions, same as LDA but for Y
     void LDY_IMM_cycle2();
     void load_Y();
-
-    //LDY ZP
-    //Same as LDA ZP but for Y
     void LDY_fetch_data();
-
-    //LDY ZP X
-    //Same as LDA ZP X but for Y result
-    //void LDY_fetch_data();
 
     /** Data Movement (transfer ops) **/
     //TAX

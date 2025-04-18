@@ -31,7 +31,9 @@ void NES::run() {
     cpu.opcode = RESET_opcode;
 
     //TODO: temp for testing
-    cpu.write(0x0012, 0x83);
+    cpu.write(0x0002, 0x04); //adl
+    cpu.write(0x0003, 0x06); //adh
+    cpu.write(0x0604, 0x83); //val
 
     //Main execution loop (infinite loop)
     while (true) {

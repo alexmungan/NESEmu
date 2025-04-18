@@ -59,6 +59,15 @@ CPU::CPU() {
     opMatrix[0xA0].addressing_mode = IMM;
     opMatrix[0xA0].cycle_op_list.push_back(&CPU::LDY_IMM_cycle2);
     opMatrix[0xA0].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDA IND,X
+    opMatrix[0xA1].pneumonic = "LDA";
+    opMatrix[0xA1].addressing_mode = INDX;
+    opMatrix[0xA1].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xA1].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0xA1].cycle_op_list.push_back(&CPU::IND_X_cycle4);
+    opMatrix[0xA1].cycle_op_list.push_back(&CPU::IND_X_cycle5);
+    opMatrix[0xA1].cycle_op_list.push_back(&CPU::LDA_fetch_data);
+    opMatrix[0xA1].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDY IMM
     opMatrix[0xA2].pneumonic = "LDX";
     opMatrix[0xA2].addressing_mode = IMM;
@@ -112,12 +121,12 @@ CPU::CPU() {
     opMatrix[0xAD].cycle_op_list.push_back(&CPU::LDA_fetch_data);
     opMatrix[0xAD].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDX ABS
-    opMatrix[0xAD].pneumonic = "LDX";
-    opMatrix[0xAD].addressing_mode = ABS;
-    opMatrix[0xAD].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
-    opMatrix[0xAD].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
-    opMatrix[0xAD].cycle_op_list.push_back(&CPU::LDX_fetch_data);
-    opMatrix[0xAD].cycle_op_list.push_back(&CPU::fetch_opcode);
+    opMatrix[0xAE].pneumonic = "LDX";
+    opMatrix[0xAE].addressing_mode = ABS;
+    opMatrix[0xAE].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xAE].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0xAE].cycle_op_list.push_back(&CPU::LDX_fetch_data);
+    opMatrix[0xAE].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDY ZP,X
     opMatrix[0xB4].pneumonic = "LDY";
     opMatrix[0xB4].addressing_mode = ZPX;
@@ -139,16 +148,48 @@ CPU::CPU() {
     opMatrix[0xB6].cycle_op_list.push_back(&CPU::ZP_Y_cycle3);
     opMatrix[0xB6].cycle_op_list.push_back(&CPU::LDX_fetch_data);
     opMatrix[0xB6].cycle_op_list.push_back(&CPU::fetch_opcode);
-    //TSX
-    opMatrix[0xBA].pneumonic = "TSX";
-    opMatrix[0xBA].addressing_mode = IMP;
-    opMatrix[0xBA].cycle_op_list.push_back(&CPU::TSX_cycle2);
-    opMatrix[0xBA].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CLV
     opMatrix[0xB8].pneumonic = "CLV";
     opMatrix[0xB8].addressing_mode = IMP;
     opMatrix[0xB8].cycle_op_list.push_back(&CPU::CLV_cycle2);
     opMatrix[0xB8].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDA ABS,Y
+    opMatrix[0xB9].pneumonic = "LDA";
+    opMatrix[0xB9].addressing_mode = ABSY;
+    opMatrix[0xB9].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xB9].cycle_op_list.push_back(&CPU::ABS_Y_cycle3);
+    opMatrix[0xB9].cycle_op_list.push_back(&CPU::page_crossed_cycle);
+    opMatrix[0xB9].cycle_op_list.push_back(&CPU::LDA_fetch_data);
+    opMatrix[0xB9].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //TSX
+    opMatrix[0xBA].pneumonic = "TSX";
+    opMatrix[0xBA].addressing_mode = IMP;
+    opMatrix[0xBA].cycle_op_list.push_back(&CPU::TSX_cycle2);
+    opMatrix[0xBA].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDY ABS,X
+    opMatrix[0xBC].pneumonic = "LDY";
+    opMatrix[0xBC].addressing_mode = ABSX;
+    opMatrix[0xBC].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xBC].cycle_op_list.push_back(&CPU::ABS_X_cycle3);
+    opMatrix[0xBC].cycle_op_list.push_back(&CPU::page_crossed_cycle);
+    opMatrix[0xBC].cycle_op_list.push_back(&CPU::LDY_fetch_data);
+    opMatrix[0xBC].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDA ABS,X
+    opMatrix[0xBD].pneumonic = "LDA";
+    opMatrix[0xBD].addressing_mode = ABSX;
+    opMatrix[0xBD].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xBD].cycle_op_list.push_back(&CPU::ABS_X_cycle3);
+    opMatrix[0xBD].cycle_op_list.push_back(&CPU::page_crossed_cycle);
+    opMatrix[0xBD].cycle_op_list.push_back(&CPU::LDA_fetch_data);
+    opMatrix[0xBD].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LDX ABS,Y
+    opMatrix[0xBE].pneumonic = "LDX";
+    opMatrix[0xBE].addressing_mode = ABSY;
+    opMatrix[0xBE].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xBE].cycle_op_list.push_back(&CPU::ABS_Y_cycle3);
+    opMatrix[0xBE].cycle_op_list.push_back(&CPU::page_crossed_cycle);
+    opMatrix[0xBE].cycle_op_list.push_back(&CPU::LDX_fetch_data);
+    opMatrix[0xBE].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CLD
     opMatrix[0xD8].pneumonic = "CLD";
     opMatrix[0xD8].addressing_mode = IMP;
@@ -370,15 +411,61 @@ void CPU::fetch_adh_cycle3() {
 }
 
 void CPU::ZP_X_cycle3() {
-    dummy_read();
-    addr1 += X; //Automatically performs 8 bit wrapping
+    dummy_read(addr1);
+    addr1 = (addr1 + X) & 0x00FF; //8 bit wrapping
     curr_micro_op++;
     interrupt_poll_cycle = false;
 }
 
 void CPU::ZP_Y_cycle3() {
-    dummy_read();
+    dummy_read(addr1);
+    addr1 = (addr1 + Y) & 0x00FF;
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::ABS_X_cycle3() {
+    addr1 |= (static_cast<uint16_t>(read(PC++)) << 8); //Fetch adh, combine with adl
+    uint16_t old_addr1 = addr1;
+    addr1 += X;
+
+    if ((old_addr1 & 0x0100) == (addr1 & 0x0100)) //page crossing did not occur
+        curr_micro_op++; //Extra incrementation to skip the dummy read that occurs in the extra cycle that occurs if there IS a page cross
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::ABS_Y_cycle3() {
+    addr1 |= (static_cast<uint16_t>(read(PC++)) << 8); //Fetch adh, combine with adl
+    uint16_t old_addr1 = addr1;
     addr1 += Y;
+
+    if ((old_addr1 & 0x0100) == (addr1 & 0x0100)) //page crossing did not occur
+        curr_micro_op++; //Extra incrementation to skip the dummy read that occurs in the extra cycle that occurs if there IS a page cross
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::page_crossed_cycle() {
+    dummy_read(addr1 - 0x0100); //To be accurate, the 6502 would not have added the carry bit to adh yet during this dummy read which is why we subtract 0x0100
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::IND_X_cycle4() {
+    addr2 = static_cast<uint16_t>(read(addr1)); //Fetch adl
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::IND_X_cycle5() {
+    addr2 |= (static_cast<uint16_t>(read(addr1+1)) << 8); //Fetch adh
+    addr1 = addr2; //The next cycle (for whatever instr is using IND, X addressing) uses addr1
+
     curr_micro_op++;
     interrupt_poll_cycle = false;
 }
