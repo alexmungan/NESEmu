@@ -363,6 +363,18 @@ public:
     //Cycle 5 (start of next instr): fetch_opcode(), result = A & data, update flags
     //Cycle 6: whatever cycle 2 is of next instr, A <- result
 
+    //AND ABS,X
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: read_ABS_X_cycle3()
+    //Cycle 4: read_page_crossed_cycle()
+    //Cycle 5: AND_final_cycle()
+    //Cycle 6 (start of next instr): fetch_opcode(), result = A & data, update flags
+    //Cycle 7: whatever cycle 2 is of next instr, A <- result
+
+    //AND ABS,Y
+    //Same as ABS,X but uses Y as index
+
     /** FLAG instructions **/
     //CLC
     //Cycle 1: fetch OP CODE and finish previous op (overlap_op1), PC++

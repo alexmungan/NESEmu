@@ -39,6 +39,22 @@ CPU::CPU() {
     opMatrix[0x38].addressing_mode = IMP;
     opMatrix[0x38].cycle_op_list.push_back(&CPU::SEC_cycle2);
     opMatrix[0x38].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //AND ABS,Y
+    opMatrix[0x39].pneumonic = "AND";
+    opMatrix[0x39].addressing_mode = ABSY;
+    opMatrix[0x39].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x39].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
+    opMatrix[0x39].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0x39].cycle_op_list.push_back(&CPU::AND_final_cycle);
+    opMatrix[0x39].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //AND ABS,X
+    opMatrix[0x3D].pneumonic = "AND";
+    opMatrix[0x3D].addressing_mode = ABSX;
+    opMatrix[0x3D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x3D].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
+    opMatrix[0x3D].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0x3D].cycle_op_list.push_back(&CPU::AND_final_cycle);
+    opMatrix[0x3D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //RTI
     opMatrix[0x40].pneumonic = "RTI";
     opMatrix[0x40].addressing_mode = IMP;
