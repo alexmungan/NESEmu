@@ -9,6 +9,12 @@ CPU::CPU() {
     opMatrix[0x18].addressing_mode = IMP;
     opMatrix[0x18].cycle_op_list.push_back(&CPU::CLC_cycle2);
     opMatrix[0x18].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //AND ZP
+    opMatrix[0x25].pneumonic = "AND";
+    opMatrix[0x25].addressing_mode = ZP;
+    opMatrix[0x25].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x25].cycle_op_list.push_back(&CPU::AND_ZP_cycle3);
+    opMatrix[0x25].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND IMM
     opMatrix[0x29].pneumonic = "AND";
     opMatrix[0x29].addressing_mode = IMM;
@@ -888,6 +894,18 @@ void CPU::load_SP() {
 /** Bitwise instructions **/
 void CPU::AND_IMM_cycle2() {
     working_data = read(PC++);
+
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    overlap_op1 = &CPU::AND;
+    overlap_op2 = &CPU::store_ALU2A;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::AND_ZP_cycle3() {
+    working_data = read(addr1);
 
     overlap_op1 = &CPU::AND;
     overlap_op2 = &CPU::store_ALU2A;

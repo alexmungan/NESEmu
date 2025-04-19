@@ -338,6 +338,16 @@ public:
     //Cycle 4: whatever cycle 2 is of next instr, A <- result
     void store_ALU2A();
 
+    //AND ZP
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch ZP address, Decode op, PC++
+    //fetch_adl_cycle2()
+    //Cycle 3: fetch data at ZP address, poll for interrupts
+    void AND_ZP_cycle3();
+    //Cycle 4 (start of next instr): fetch_opcode(), result = A & data, update flags
+    //Cycle 5: whatever cycle 2 is of next instr, A <- result
+
+
     /** FLAG instructions **/
     //CLC
     //Cycle 1: fetch OP CODE and finish previous op (overlap_op1), PC++
