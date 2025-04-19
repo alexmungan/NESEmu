@@ -413,6 +413,15 @@ public:
     void EOR();
     void EOR_IMM_cycle2();
 
+    //BIT ZP
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3:
+    void BIT_final_cycle();
+    //Cycle 4 (start of next instr): fetch_opcode(), result = A & data, update Zero flag, bit 7 and 6 of data are used to update N and V
+    void BIT();
+    //Cycle 7: whatever cycle 2 is of next instr, result is discarded
+
 
     /** FLAG instructions **/
     //CLC
