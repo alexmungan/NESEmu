@@ -407,6 +407,12 @@ public:
     //Also, OR IMM will need
     void OR_IMM_cycle2();
 
+    //EOR instructions
+    //Same as AND instructions but final cycle will use EOR_final_cycle
+    void EOR_final_cycle();
+    void EOR();
+    void EOR_IMM_cycle2();
+
 
     /** FLAG instructions **/
     //CLC

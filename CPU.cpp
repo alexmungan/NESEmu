@@ -141,17 +141,76 @@ CPU::CPU() {
     opMatrix[0x40].cycle_op_list.push_back(&CPU::RTI_cycle5);
     opMatrix[0x40].cycle_op_list.push_back(&CPU::RTI_cycle6);
     opMatrix[0x40].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //EOR INDX
+    opMatrix[0x41].pneumonic = "EOR";
+    opMatrix[0x41].addressing_mode = INDX;
+    opMatrix[0x41].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x41].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0x41].cycle_op_list.push_back(&CPU::IND_X_cycle4);
+    opMatrix[0x41].cycle_op_list.push_back(&CPU::IND_X_cycle5);
+    opMatrix[0x41].cycle_op_list.push_back(&CPU::EOR_final_cycle);
+    opMatrix[0x41].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //EOR ZP
+    opMatrix[0x45].pneumonic = "EOR";
+    opMatrix[0x45].addressing_mode = ZP;
+    opMatrix[0x45].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x45].cycle_op_list.push_back(&CPU::EOR_final_cycle);
+    opMatrix[0x45].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //EOR IMM
+    opMatrix[0x49].pneumonic = "EOR";
+    opMatrix[0x49].addressing_mode = IMM;
+    opMatrix[0x49].cycle_op_list.push_back(&CPU::EOR_IMM_cycle2);
+    opMatrix[0x49].cycle_op_list.push_back(&CPU::fetch_opcode);
     //JMP ABS
     opMatrix[0x4C].pneumonic = "JMP";
     opMatrix[0x4C].addressing_mode = ABS;
     opMatrix[0x4C].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x4C].cycle_op_list.push_back(&CPU::JMP_ABS_cycle3);
     opMatrix[0x4C].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //EOR ABS
+    opMatrix[0x4D].pneumonic = "EOR";
+    opMatrix[0x4D].addressing_mode = ABS;
+    opMatrix[0x4D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x4D].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0x4D].cycle_op_list.push_back(&CPU::EOR_final_cycle);
+    opMatrix[0x4D].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //EOR INDY
+    opMatrix[0x51].pneumonic = "EOR";
+    opMatrix[0x51].addressing_mode = INDY;
+    opMatrix[0x51].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x51].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
+    opMatrix[0x51].cycle_op_list.push_back(&CPU::read_IND_Y_cycle4);
+    opMatrix[0x51].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0x51].cycle_op_list.push_back(&CPU::EOR_final_cycle);
+    opMatrix[0x51].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //EOR ZP,X
+    opMatrix[0x55].pneumonic = "EOR";
+    opMatrix[0x55].addressing_mode = ZPX;
+    opMatrix[0x55].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x55].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0x55].cycle_op_list.push_back(&CPU::EOR_final_cycle);
+    opMatrix[0x55].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CLI
     opMatrix[0x58].pneumonic = "CLI";
     opMatrix[0x58].addressing_mode = IMP;
     opMatrix[0x58].cycle_op_list.push_back(&CPU::CLI_cycle2);
     opMatrix[0x58].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //EOR ABS,Y
+    opMatrix[0x59].pneumonic = "EOR";
+    opMatrix[0x59].addressing_mode = ABSY;
+    opMatrix[0x59].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x59].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
+    opMatrix[0x59].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0x59].cycle_op_list.push_back(&CPU::EOR_final_cycle);
+    opMatrix[0x59].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //EOR ABS,X
+    opMatrix[0x5D].pneumonic = "EOR";
+    opMatrix[0x5D].addressing_mode = ABSX;
+    opMatrix[0x5D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x5D].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
+    opMatrix[0x5D].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0x5D].cycle_op_list.push_back(&CPU::EOR_final_cycle);
+    opMatrix[0x5D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SEI
     opMatrix[0x78].pneumonic = "SEI";
     opMatrix[0x78].addressing_mode = IMP;
@@ -1041,6 +1100,27 @@ void CPU::OR_final_cycle() {
     curr_micro_op++;
 }
 
+void CPU::EOR_IMM_cycle2() {
+    working_data = read(PC++);
+
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    overlap_op1 = &CPU::EOR;
+    overlap_op2 = &CPU::store_ALU2A;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::EOR_final_cycle() {
+    working_data = read(addr1);
+
+    overlap_op1 = &CPU::EOR;
+    overlap_op2 = &CPU::store_ALU2A;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
 void CPU::AND() {
     ALU_result = A & working_data;
 
@@ -1057,6 +1137,20 @@ void CPU::AND() {
 
 void CPU::OR() {
     ALU_result = A | working_data;
+
+    if (ALU_result == 0)
+        setStatusReg(true, Z);
+    else
+        setStatusReg(false, Z);
+
+    if ((ALU_result & 0x80) != 0)
+        setStatusReg(true, N);
+    else
+        setStatusReg(false, N);
+}
+
+void CPU::EOR() {
+    ALU_result = A ^ working_data;
 
     if (ALU_result == 0)
         setStatusReg(true, Z);
