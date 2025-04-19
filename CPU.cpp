@@ -109,11 +109,27 @@ CPU::CPU() {
     opMatrix[0x98].addressing_mode = IMP;
     opMatrix[0x98].cycle_op_list.push_back(&CPU::TYA_cycle2);
     opMatrix[0x98].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //STA ABS,Y
+    opMatrix[0x99].pneumonic = "STA";
+    opMatrix[0x99].addressing_mode = ABSY;
+    opMatrix[0x99].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x99].cycle_op_list.push_back(&CPU::write_ABS_Y_cycle3);
+    opMatrix[0x99].cycle_op_list.push_back(&CPU::write_ABS_XY_cycle4);
+    opMatrix[0x99].cycle_op_list.push_back(&CPU::store_A);
+    opMatrix[0x99].cycle_op_list.push_back(&CPU::fetch_opcode);
     //TXS
     opMatrix[0x9A].pneumonic = "TXS";
     opMatrix[0x9A].addressing_mode = IMP;
     opMatrix[0x9A].cycle_op_list.push_back(&CPU::TXS_cycle2);
     opMatrix[0x9A].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //STA ABS,X
+    opMatrix[0x9D].pneumonic = "STA";
+    opMatrix[0x9D].addressing_mode = ABSX;
+    opMatrix[0x9D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x9D].cycle_op_list.push_back(&CPU::write_ABS_X_cycle3);
+    opMatrix[0x9D].cycle_op_list.push_back(&CPU::write_ABS_XY_cycle4);
+    opMatrix[0x9D].cycle_op_list.push_back(&CPU::store_A);
+    opMatrix[0x9D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDY IMM
     opMatrix[0xA0].pneumonic = "LDY";
     opMatrix[0xA0].addressing_mode = IMM;
@@ -226,7 +242,7 @@ CPU::CPU() {
     opMatrix[0xB9].pneumonic = "LDA";
     opMatrix[0xB9].addressing_mode = ABSY;
     opMatrix[0xB9].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
-    opMatrix[0xB9].cycle_op_list.push_back(&CPU::ABS_Y_cycle3);
+    opMatrix[0xB9].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
     opMatrix[0xB9].cycle_op_list.push_back(&CPU::page_crossed_cycle);
     opMatrix[0xB9].cycle_op_list.push_back(&CPU::LDA_fetch_data);
     opMatrix[0xB9].cycle_op_list.push_back(&CPU::fetch_opcode);
@@ -239,7 +255,7 @@ CPU::CPU() {
     opMatrix[0xBC].pneumonic = "LDY";
     opMatrix[0xBC].addressing_mode = ABSX;
     opMatrix[0xBC].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
-    opMatrix[0xBC].cycle_op_list.push_back(&CPU::ABS_X_cycle3);
+    opMatrix[0xBC].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
     opMatrix[0xBC].cycle_op_list.push_back(&CPU::page_crossed_cycle);
     opMatrix[0xBC].cycle_op_list.push_back(&CPU::LDY_fetch_data);
     opMatrix[0xBC].cycle_op_list.push_back(&CPU::fetch_opcode);
@@ -247,7 +263,7 @@ CPU::CPU() {
     opMatrix[0xBD].pneumonic = "LDA";
     opMatrix[0xBD].addressing_mode = ABSX;
     opMatrix[0xBD].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
-    opMatrix[0xBD].cycle_op_list.push_back(&CPU::ABS_X_cycle3);
+    opMatrix[0xBD].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
     opMatrix[0xBD].cycle_op_list.push_back(&CPU::page_crossed_cycle);
     opMatrix[0xBD].cycle_op_list.push_back(&CPU::LDA_fetch_data);
     opMatrix[0xBD].cycle_op_list.push_back(&CPU::fetch_opcode);
@@ -255,7 +271,7 @@ CPU::CPU() {
     opMatrix[0xBE].pneumonic = "LDX";
     opMatrix[0xBE].addressing_mode = ABSY;
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
-    opMatrix[0xBE].cycle_op_list.push_back(&CPU::ABS_Y_cycle3);
+    opMatrix[0xBE].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::page_crossed_cycle);
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::LDX_fetch_data);
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::fetch_opcode);
@@ -493,7 +509,7 @@ void CPU::ZP_Y_cycle3() {
     interrupt_poll_cycle = false;
 }
 
-void CPU::ABS_X_cycle3() {
+void CPU::read_ABS_X_cycle3() {
     addr1 |= (static_cast<uint16_t>(read(PC++)) << 8); //Fetch adh, combine with adl
     uint16_t old_addr1 = addr1;
     addr1 += X;
@@ -505,7 +521,7 @@ void CPU::ABS_X_cycle3() {
     interrupt_poll_cycle = false;
 }
 
-void CPU::ABS_Y_cycle3() {
+void CPU::read_ABS_Y_cycle3() {
     addr1 |= (static_cast<uint16_t>(read(PC++)) << 8); //Fetch adh, combine with adl
     uint16_t old_addr1 = addr1;
     addr1 += Y;
@@ -517,8 +533,42 @@ void CPU::ABS_Y_cycle3() {
     interrupt_poll_cycle = false;
 }
 
+void CPU::write_ABS_X_cycle3() {
+    addr1 |= (static_cast<uint16_t>(read(PC++)) << 8); //Fetch adh, combine with adl
+    uint16_t old_addr1 = addr1;
+    addr1 += X;
+
+    if ((old_addr1 & 0x0100) != (addr1 & 0x0100)) //page crossed
+        page_crossed = true;
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::write_ABS_Y_cycle3() {
+    addr1 |= (static_cast<uint16_t>(read(PC++)) << 8); //Fetch adh, combine with adl
+    uint16_t old_addr1 = addr1;
+    addr1 += Y;
+
+    if ((old_addr1 & 0x0100) != (addr1 & 0x0100)) //page crossed
+        page_crossed = true;
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
 void CPU::page_crossed_cycle() {
     dummy_read(addr1 - 0x0100); //To be accurate, the 6502 would not have added the carry bit to adh yet during this dummy read which is why we subtract 0x0100
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::write_ABS_XY_cycle4() {
+    if (page_crossed)
+        dummy_read(addr1 - 0x0100);
+    else
+        dummy_read(addr1);
 
     curr_micro_op++;
     interrupt_poll_cycle = false;

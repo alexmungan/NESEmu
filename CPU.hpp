@@ -54,6 +54,7 @@ public:
     uint16_t addr2 = 0x00; //Used for addressing modes w/ extra layer of indirection
     uint8_t working_data = 0x00; //Holds the value that will be used by instruction after addressing mode stuff has been handled, it may also hold an ALU result (for ADC instr for ex) but we must be careful not to modify working_data before storing this ALU result to A
     uint8_t curr_micro_op = 0;
+    bool page_crossed = false; //Used in write and RMW instructions, read instructions handle things differently
     bool interrupt_poll_cycle = false; //Is set to true on the cycle where interrupt polling occurs (normally last cycle of an instruction)
     //Function pointers to the operations that are overlapped with the next instruction's fetch_opcode and potentially the next cycle as well (for ADC Abs for example)
     cycle_operation overlap_op1 = nullptr;
@@ -120,12 +121,17 @@ public:
     void ZP_Y_cycle3();
 
     //Cycle 3 fetches the next instr byte (msb of an address), while adding X to lsb, PC++
-    void ABS_X_cycle3();
-    void ABS_Y_cycle3();
+    //Notice: prefix read is to signify this is for read instructions
+    void read_ABS_X_cycle3();
+    void read_ABS_Y_cycle3();
+    //For write instructions
+    void write_ABS_X_cycle3();
+    void write_ABS_Y_cycle3();
 
     //Might occur on different cycles for different addressing modes that page crossing may occur
     //However, it never occurs on cycle 2 (where overlap_op2 is checked) or the last cycle, where interrupts are polled
     void page_crossed_cycle();
+    void write_ABS_XY_cycle4(); //similar to above, but for write and RMW instructions
 
     //Cycle 4 uses ZP+X indirect address to access mem and obtain lsb of address to final data
     void IND_X_cycle4();
@@ -180,7 +186,7 @@ public:
     //Cycle 1: fetch_opcode()
     //Cycle 2: fetch_adl_cycle2()
     //Cycle 3: fetch next instr byte (adh), add X to adl, PC++, If page boundary not crossed, curr_micro_op gets extra increment to skip over extra cycle
-    //void ABS_X_cycle3()
+    //void read_ABS_X_cycle3()
     //Assuming Page boundary crossed
     //Cycle 4: Dummy read at mem(adh, adl+X), add 1 to adh
     //page_crossed_cycle()
@@ -253,6 +259,16 @@ public:
     //Cycle 2: fetch_adl_cycle2()
     //Cycle 3: fetch_adh_cycle3()
     //Cycle 4: store_A()
+
+    //STA ABS,X
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: write_ABS_X_cycle3()
+    //Cycle 4: write_ABS_XY_cycle4()
+    //Cycle 5: store_A()
+
+    //STA ABS,
+    //Same as above but cycle 3 uses write_ABS_Y_cycle3()
 
     //STX instructions: similar to STA but for X
     void store_X();
