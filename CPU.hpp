@@ -130,8 +130,8 @@ public:
 
     //Might occur on different cycles for different addressing modes that page crossing may occur
     //However, it never occurs on cycle 2 (where overlap_op2 is checked) or the last cycle, where interrupts are polled
-    void page_crossed_cycle();
-    void write_ABS_XY_cycle4(); //similar to above, but for write and RMW instructions
+    void read_page_crossed_cycle();
+    void write_page_crossed_cycle(); //similar to above, but for write and RMW instructions
 
     //Cycle 4 uses ZP+X indirect address to access mem and obtain lsb of address to final data
     void IND_X_cycle4();
@@ -141,7 +141,9 @@ public:
     //Cycle 3: uses ZP indirect address to access mem and obtain lsb of BASE address (Y will be added to the base in a later cycle)
     void IND_Y_cycle3();
     //Cycle 4: uses ZP+1 indirect address to access mem and obtain msb of BASE address (which may have a carry added to it if a page cross occurs when adding Y to lsb of BASE)
-    void IND_Y_cycle4();
+    void read_IND_Y_cycle4();
+    //For write instructions
+    void write_IND_Y_cycle4();
 
     /** Data Movement (load ops)**/
     //LDA IMM
@@ -189,7 +191,7 @@ public:
     //void read_ABS_X_cycle3()
     //Assuming Page boundary crossed
     //Cycle 4: Dummy read at mem(adh, adl+X), add 1 to adh
-    //page_crossed_cycle()
+    //read_page_crossed_cycle()
     //Cycle 5: LDA_fetch_data(), poll for interrupts
     //Cycle 6 (start of next instr); fetch next opcode, A <-data, flags set, PC++
     //If page boundary NOT crossed
@@ -218,10 +220,10 @@ public:
     //cycle 3: fetch the adl stored at the ZP address
     //void IND_Y_cycle3()
     //Cycle 4: fetch adh stored at ZP+1, add Y to adl
-    //void IND_Y_cycle4()
+    //void read_IND_Y_cycle4()
     //Assume page boundary crossed
     //Cycle 5: dummy read mem(adh,adl+Y), add carry to adh
-    //page_crossed_cycle()
+    //read_page_crossed_cycle()
     //Cycle 6: fetch data at mem(adh+1,adl+Y)
     //LDA_fetch_data()
     //Cycle 7 (start of next instr): fetch next opcode, A <- data, flags set, PC++
@@ -264,10 +266,10 @@ public:
     //Cycle 1: fetch_opcode()
     //Cycle 2: fetch_adl_cycle2()
     //Cycle 3: write_ABS_X_cycle3()
-    //Cycle 4: write_ABS_XY_cycle4()
+    //Cycle 4: write_page_crossed_cycle()
     //Cycle 5: store_A()
 
-    //STA ABS,
+    //STA ABS, Y
     //Same as above but cycle 3 uses write_ABS_Y_cycle3()
 
     //STA (Indirect, X) i.e. preindexed
@@ -276,6 +278,14 @@ public:
     //Cycle 3: ZP_X_cycle3()
     //Cycle 4: IND_X_cycle4()
     //Cycle 5: IND_X_cycle5()
+    //Cycle 6: store_A()
+
+    //STA (Indirect), Y i.e. postindexed
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: IND_Y_cycle3()
+    //Cycle 4: write_IND_Y_cycle4()
+    //Cycle 5: write_page_crossed_cycle()
     //Cycle 6: store_A()
 
     //STX instructions: similar to STA but for X

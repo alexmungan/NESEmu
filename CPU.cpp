@@ -92,6 +92,15 @@ CPU::CPU() {
     opMatrix[0x8E].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0x8E].cycle_op_list.push_back(&CPU::store_X);
     opMatrix[0x8E].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //STA (Indirect), Y
+    opMatrix[0x91].pneumonic = "STA";
+    opMatrix[0x91].addressing_mode = INDY;
+    opMatrix[0x91].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x91].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
+    opMatrix[0x91].cycle_op_list.push_back(&CPU::write_IND_Y_cycle4);
+    opMatrix[0x91].cycle_op_list.push_back(&CPU::write_page_crossed_cycle);
+    opMatrix[0x91].cycle_op_list.push_back(&CPU::store_A);
+    opMatrix[0x91].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STY ZPX
     opMatrix[0x94].pneumonic = "STY";
     opMatrix[0x94].addressing_mode = ZPX;
@@ -123,7 +132,7 @@ CPU::CPU() {
     opMatrix[0x99].addressing_mode = ABSY;
     opMatrix[0x99].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x99].cycle_op_list.push_back(&CPU::write_ABS_Y_cycle3);
-    opMatrix[0x99].cycle_op_list.push_back(&CPU::write_ABS_XY_cycle4);
+    opMatrix[0x99].cycle_op_list.push_back(&CPU::write_page_crossed_cycle);
     opMatrix[0x99].cycle_op_list.push_back(&CPU::store_A);
     opMatrix[0x99].cycle_op_list.push_back(&CPU::fetch_opcode);
     //TXS
@@ -136,7 +145,7 @@ CPU::CPU() {
     opMatrix[0x9D].addressing_mode = ABSX;
     opMatrix[0x9D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x9D].cycle_op_list.push_back(&CPU::write_ABS_X_cycle3);
-    opMatrix[0x9D].cycle_op_list.push_back(&CPU::write_ABS_XY_cycle4);
+    opMatrix[0x9D].cycle_op_list.push_back(&CPU::write_page_crossed_cycle);
     opMatrix[0x9D].cycle_op_list.push_back(&CPU::store_A);
     opMatrix[0x9D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDY IMM
@@ -217,8 +226,8 @@ CPU::CPU() {
     opMatrix[0xB1].addressing_mode = INDY;
     opMatrix[0xB1].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xB1].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
-    opMatrix[0xB1].cycle_op_list.push_back(&CPU::IND_Y_cycle4);
-    opMatrix[0xB1].cycle_op_list.push_back(&CPU::page_crossed_cycle);
+    opMatrix[0xB1].cycle_op_list.push_back(&CPU::read_IND_Y_cycle4);
+    opMatrix[0xB1].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
     opMatrix[0xB1].cycle_op_list.push_back(&CPU::LDA_fetch_data);
     opMatrix[0xB1].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDY ZP,X
@@ -252,7 +261,7 @@ CPU::CPU() {
     opMatrix[0xB9].addressing_mode = ABSY;
     opMatrix[0xB9].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xB9].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
-    opMatrix[0xB9].cycle_op_list.push_back(&CPU::page_crossed_cycle);
+    opMatrix[0xB9].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
     opMatrix[0xB9].cycle_op_list.push_back(&CPU::LDA_fetch_data);
     opMatrix[0xB9].cycle_op_list.push_back(&CPU::fetch_opcode);
     //TSX
@@ -265,7 +274,7 @@ CPU::CPU() {
     opMatrix[0xBC].addressing_mode = ABSX;
     opMatrix[0xBC].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xBC].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
-    opMatrix[0xBC].cycle_op_list.push_back(&CPU::page_crossed_cycle);
+    opMatrix[0xBC].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
     opMatrix[0xBC].cycle_op_list.push_back(&CPU::LDY_fetch_data);
     opMatrix[0xBC].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDA ABS,X
@@ -273,7 +282,7 @@ CPU::CPU() {
     opMatrix[0xBD].addressing_mode = ABSX;
     opMatrix[0xBD].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xBD].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
-    opMatrix[0xBD].cycle_op_list.push_back(&CPU::page_crossed_cycle);
+    opMatrix[0xBD].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
     opMatrix[0xBD].cycle_op_list.push_back(&CPU::LDA_fetch_data);
     opMatrix[0xBD].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDX ABS,Y
@@ -281,7 +290,7 @@ CPU::CPU() {
     opMatrix[0xBE].addressing_mode = ABSY;
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
-    opMatrix[0xBE].cycle_op_list.push_back(&CPU::page_crossed_cycle);
+    opMatrix[0xBE].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::LDX_fetch_data);
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CLD
@@ -566,19 +575,20 @@ void CPU::write_ABS_Y_cycle3() {
     interrupt_poll_cycle = false;
 }
 
-void CPU::page_crossed_cycle() {
+void CPU::read_page_crossed_cycle() {
     dummy_read(addr1 - 0x0100); //To be accurate, the 6502 would not have added the carry bit to adh yet during this dummy read which is why we subtract 0x0100
 
     curr_micro_op++;
     interrupt_poll_cycle = false;
 }
 
-void CPU::write_ABS_XY_cycle4() {
+void CPU::write_page_crossed_cycle() {
     if (page_crossed)
         dummy_read(addr1 - 0x0100);
     else
         dummy_read(addr1);
 
+    page_crossed = false; //reset
     curr_micro_op++;
     interrupt_poll_cycle = false;
 }
@@ -605,7 +615,7 @@ void CPU::IND_Y_cycle3() {
     interrupt_poll_cycle = false;
 }
 
-void CPU::IND_Y_cycle4() {
+void CPU::read_IND_Y_cycle4() {
     addr2 |= (static_cast<uint16_t>(read(addr1+1)) << 8); //fetch msb of base address
     uint16_t old_addr2 = addr2;
     addr2 += Y;
@@ -618,6 +628,21 @@ void CPU::IND_Y_cycle4() {
     curr_micro_op++;
     interrupt_poll_cycle = false;
 }
+
+void CPU::write_IND_Y_cycle4() {
+    addr2 |= (static_cast<uint16_t>(read(addr1+1)) << 8); //fetch msb of base address
+    uint16_t old_addr2 = addr2;
+    addr2 += Y;
+
+    if ((old_addr2 & 0x0100) != (addr2 & 0x0100)) //page crossed
+        page_crossed = true;
+
+    addr1 = addr2;
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
 
 /** Data Movement (access) **/
 void CPU::LDA_IMM_cycle2() {
