@@ -375,6 +375,14 @@ public:
     //AND ABS,Y
     //Same as ABS,X but uses Y as index
 
+    //AND indexed indirect i.e. preindexed
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: ZP_X_cycle3()
+    //Cycle 4: IND_X_cycle4()
+    //Cycle 5: IND_X_cycle5()
+    //Cycle 6: AND_final_cycle()
+
     /** FLAG instructions **/
     //CLC
     //Cycle 1: fetch OP CODE and finish previous op (overlap_op1), PC++
