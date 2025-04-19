@@ -382,6 +382,23 @@ public:
     //Cycle 4: IND_X_cycle4()
     //Cycle 5: IND_X_cycle5()
     //Cycle 6: AND_final_cycle()
+    //Cycle 7 (start of next instr): fetch_opcode(), result = A & data, update flags
+    //Cycle 8: whatever cycle 2 is of next instr, A <- result
+
+    //AND indirect indexed i.e postindexed
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: IND_Y_cycle3()
+    //Cycle 4: read_IND_Y_cycle4()
+    //Assumming page cross
+    //Cycle 5: read_page_crossed_cycle
+    //Cycle 6: AND_final_cycle()
+    //Cycle 7 (start of next instr): fetch_opcode(), result = A & data, update flags
+    //Cycle 8: whatever cycle 2 is of next instr, A <- result
+    //No page cross:
+    //Cycle 5: read_page_crossed_cycle
+    //Cycle 6 (start of next instr): fetch_opcode(), result = A & data, update flags
+    //Cycle 7: whatever cycle 2 is of next instr, A <- result
 
     /** FLAG instructions **/
     //CLC

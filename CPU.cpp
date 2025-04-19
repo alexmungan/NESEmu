@@ -36,6 +36,15 @@ CPU::CPU() {
     opMatrix[0x2D].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0x2D].cycle_op_list.push_back(&CPU::AND_final_cycle);
     opMatrix[0x2D].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //AND INDY
+    opMatrix[0x31].pneumonic = "AND";
+    opMatrix[0x31].addressing_mode = INDY;
+    opMatrix[0x31].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x31].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
+    opMatrix[0x31].cycle_op_list.push_back(&CPU::read_IND_Y_cycle4);
+    opMatrix[0x31].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0x31].cycle_op_list.push_back(&CPU::AND_final_cycle);
+    opMatrix[0x31].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND ZP,X
     opMatrix[0x35].pneumonic = "AND";
     opMatrix[0x35].addressing_mode = ZPX;
