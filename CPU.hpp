@@ -391,7 +391,7 @@ public:
     //Cycle 3: IND_Y_cycle3()
     //Cycle 4: read_IND_Y_cycle4()
     //Assumming page cross
-    //Cycle 5: read_page_crossed_cycle
+    //Cycle 5: read_page_crossed_cycle()
     //Cycle 6: AND_final_cycle()
     //Cycle 7 (start of next instr): fetch_opcode(), result = A & data, update flags
     //Cycle 8: whatever cycle 2 is of next instr, A <- result
@@ -399,6 +399,14 @@ public:
     //Cycle 5: read_page_crossed_cycle
     //Cycle 6 (start of next instr): fetch_opcode(), result = A & data, update flags
     //Cycle 7: whatever cycle 2 is of next instr, A <- result
+
+    //OR instructions
+    //Same as AND instructions but final cycle will use OR_final_cycle
+    void OR_final_cycle();
+    void OR();
+    //Also, OR IMM will need
+    void OR_IMM_cycle2();
+
 
     /** FLAG instructions **/
     //CLC

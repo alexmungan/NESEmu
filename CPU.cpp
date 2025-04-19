@@ -4,11 +4,70 @@
 CPU::CPU() {
     //Initialize the opcode matrix
     opMatrix.resize(16*16 + 3); //3 is for the interrupt sequences
+    //OR INDX
+    opMatrix[0x01].pneumonic = "ORA";
+    opMatrix[0x01].addressing_mode = INDX;
+    opMatrix[0x01].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x01].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0x01].cycle_op_list.push_back(&CPU::IND_X_cycle4);
+    opMatrix[0x01].cycle_op_list.push_back(&CPU::IND_X_cycle5);
+    opMatrix[0x01].cycle_op_list.push_back(&CPU::OR_final_cycle);
+    opMatrix[0x01].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //OR ZP
+    opMatrix[0x05].pneumonic = "ORA";
+    opMatrix[0x05].addressing_mode = ZP;
+    opMatrix[0x05].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x05].cycle_op_list.push_back(&CPU::OR_final_cycle);
+    opMatrix[0x05].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //OR IMM
+    opMatrix[0x09].pneumonic = "ORA";
+    opMatrix[0x09].addressing_mode = IMM;
+    opMatrix[0x09].cycle_op_list.push_back(&CPU::OR_IMM_cycle2);
+    opMatrix[0x09].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //OR ABS
+    opMatrix[0x0D].pneumonic = "ORA";
+    opMatrix[0x0D].addressing_mode = ABS;
+    opMatrix[0x0D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x0D].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0x0D].cycle_op_list.push_back(&CPU::OR_final_cycle);
+    opMatrix[0x0D].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //OR INDY
+    opMatrix[0x11].pneumonic = "ORA";
+    opMatrix[0x11].addressing_mode = INDY;
+    opMatrix[0x11].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x11].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
+    opMatrix[0x11].cycle_op_list.push_back(&CPU::read_IND_Y_cycle4);
+    opMatrix[0x11].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0x11].cycle_op_list.push_back(&CPU::OR_final_cycle);
+    opMatrix[0x11].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //OR ZP,X
+    opMatrix[0x15].pneumonic = "ORA";
+    opMatrix[0x15].addressing_mode = ZPX;
+    opMatrix[0x15].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x15].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0x15].cycle_op_list.push_back(&CPU::OR_final_cycle);
+    opMatrix[0x15].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CLC
     opMatrix[0x18].pneumonic = "CLC";
     opMatrix[0x18].addressing_mode = IMP;
     opMatrix[0x18].cycle_op_list.push_back(&CPU::CLC_cycle2);
     opMatrix[0x18].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //OR ABS,Y
+    opMatrix[0x19].pneumonic = "ORA";
+    opMatrix[0x19].addressing_mode = ABSY;
+    opMatrix[0x19].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x19].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
+    opMatrix[0x19].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0x19].cycle_op_list.push_back(&CPU::OR_final_cycle);
+    opMatrix[0x19].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //OR ABS,X
+    opMatrix[0x1D].pneumonic = "ORA";
+    opMatrix[0x1D].addressing_mode = ABSX;
+    opMatrix[0x1D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x1D].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
+    opMatrix[0x1D].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0x1D].cycle_op_list.push_back(&CPU::OR_final_cycle);
+    opMatrix[0x1D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND INDX
     opMatrix[0x21].pneumonic = "AND";
     opMatrix[0x21].addressing_mode = INDX;
@@ -961,8 +1020,44 @@ void CPU::AND_final_cycle() {
     curr_micro_op++;
 }
 
+void CPU::OR_IMM_cycle2() {
+    working_data = read(PC++);
+
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    overlap_op1 = &CPU::OR;
+    overlap_op2 = &CPU::store_ALU2A;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::OR_final_cycle() {
+    working_data = read(addr1);
+
+    overlap_op1 = &CPU::OR;
+    overlap_op2 = &CPU::store_ALU2A;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
 void CPU::AND() {
     ALU_result = A & working_data;
+
+    if (ALU_result == 0)
+        setStatusReg(true, Z);
+    else
+        setStatusReg(false, Z);
+
+    if ((ALU_result & 0x80) != 0)
+        setStatusReg(true, N);
+    else
+        setStatusReg(false, N);
+}
+
+void CPU::OR() {
+    ALU_result = A | working_data;
+
     if (ALU_result == 0)
         setStatusReg(true, Z);
     else
