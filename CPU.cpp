@@ -13,19 +13,26 @@ CPU::CPU() {
     opMatrix[0x25].pneumonic = "AND";
     opMatrix[0x25].addressing_mode = ZP;
     opMatrix[0x25].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
-    opMatrix[0x25].cycle_op_list.push_back(&CPU::AND_ZP_final_cycle);
+    opMatrix[0x25].cycle_op_list.push_back(&CPU::AND_final_cycle);
     opMatrix[0x25].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND IMM
     opMatrix[0x29].pneumonic = "AND";
     opMatrix[0x29].addressing_mode = IMM;
     opMatrix[0x29].cycle_op_list.push_back(&CPU::AND_IMM_cycle2);
     opMatrix[0x29].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //AND ABS
+    opMatrix[0x2D].pneumonic = "AND";
+    opMatrix[0x2D].addressing_mode = ABS;
+    opMatrix[0x2D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x2D].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0x2D].cycle_op_list.push_back(&CPU::AND_final_cycle);
+    opMatrix[0x2D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND ZP,X
     opMatrix[0x35].pneumonic = "AND";
     opMatrix[0x35].addressing_mode = ZPX;
     opMatrix[0x35].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x35].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
-    opMatrix[0x35].cycle_op_list.push_back(&CPU::AND_ZP_final_cycle);
+    opMatrix[0x35].cycle_op_list.push_back(&CPU::AND_final_cycle);
     opMatrix[0x35].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SEC
     opMatrix[0x38].pneumonic = "SEC";
@@ -911,7 +918,7 @@ void CPU::AND_IMM_cycle2() {
     curr_micro_op++;
 }
 
-void CPU::AND_ZP_final_cycle() {
+void CPU::AND_final_cycle() {
     working_data = read(addr1);
 
     overlap_op1 = &CPU::AND;

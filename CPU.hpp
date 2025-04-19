@@ -343,7 +343,7 @@ public:
     //Cycle 2: fetch ZP address, Decode op, PC++
     //fetch_adl_cycle2()
     //Cycle 3: fetch data at ZP address, poll for interrupts
-    void AND_ZP_final_cycle();
+    void AND_final_cycle();
     //Cycle 4 (start of next instr): fetch_opcode(), result = A & data, update flags
     //Cycle 5: whatever cycle 2 is of next instr, A <- result
 
@@ -351,10 +351,17 @@ public:
     //Cycle 1: fetch_opcode()
     //Cycle 2: fetch_adl_cycle2()
     //Cycle 3: ZP_X_cycle3()
-    //Cycle 4: AND_ZP_final_cycle()
+    //Cycle 4: AND_final_cycle()
     //Cycle 5 (start of next instr): fetch_opcode(), result = A & data, update flags
     //Cycle 6: whatever cycle 2 is of next instr, A <- result
 
+    //AND ABS
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: fetch_adh_cycle3()
+    //Cycle 4: AND_final_cycle()
+    //Cycle 5 (start of next instr): fetch_opcode(), result = A & data, update flags
+    //Cycle 6: whatever cycle 2 is of next instr, A <- result
 
     /** FLAG instructions **/
     //CLC
