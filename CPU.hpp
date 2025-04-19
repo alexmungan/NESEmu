@@ -270,6 +270,14 @@ public:
     //STA ABS,
     //Same as above but cycle 3 uses write_ABS_Y_cycle3()
 
+    //STA (Indirect, X) i.e. preindexed
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: ZP_X_cycle3()
+    //Cycle 4: IND_X_cycle4()
+    //Cycle 5: IND_X_cycle5()
+    //Cycle 6: store_A()
+
     //STX instructions: similar to STA but for X
     void store_X();
 

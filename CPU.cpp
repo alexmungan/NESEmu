@@ -39,6 +39,15 @@ CPU::CPU() {
     opMatrix[0x78].addressing_mode = IMP;
     opMatrix[0x78].cycle_op_list.push_back(&CPU::SEI_cycle2);
     opMatrix[0x78].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //STA INDX
+    opMatrix[0x81].pneumonic = "STA";
+    opMatrix[0x81].addressing_mode = INDX;
+    opMatrix[0x81].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x81].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0x81].cycle_op_list.push_back(&CPU::IND_X_cycle4);
+    opMatrix[0x81].cycle_op_list.push_back(&CPU::IND_X_cycle5);
+    opMatrix[0x81].cycle_op_list.push_back(&CPU::store_A);
+    opMatrix[0x81].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STY ZP
     opMatrix[0x84].pneumonic = "STY";
     opMatrix[0x84].addressing_mode = ZP;
