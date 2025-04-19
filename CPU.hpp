@@ -53,6 +53,7 @@ public:
     uint16_t addr1 = 0x00;
     uint16_t addr2 = 0x00; //Used for addressing modes w/ extra layer of indirection
     uint8_t working_data = 0x00; //Holds the value that will be used by instruction after addressing mode stuff has been handled, it may also hold an ALU result (for ADC instr for ex) but we must be careful not to modify working_data before storing this ALU result to A
+    uint8_t ALU_result = 0x00;
     uint8_t curr_micro_op = 0;
     bool page_crossed = false; //Used in write and RMW instructions, read instructions handle things differently
     bool interrupt_poll_cycle = false; //Is set to true on the cycle where interrupt polling occurs (normally last cycle of an instruction)
@@ -327,6 +328,15 @@ public:
     //Helper
     void load_SP();
 
+    /** Bitwise instructions **/
+    //AND immediate
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch IMM val, Decode op, PC++, poll for interrupts
+    void AND_IMM_cycle2();
+    //Cycle 3 (start of next instr): fetch_opcode(), result = A & val, update flags
+    void AND();
+    //Cycle 4: whatever cycle 2 is of next instr, A <- result
+    void store_ALU2A();
 
     /** FLAG instructions **/
     //CLC
@@ -371,10 +381,6 @@ public:
     //Does the same steps as SEC except that D is set to 1 instead of C
     void SED_cycle2();
     void set_decimal();
-
-    /** Bitwise **/
-    //Bitwise AND - takes 0 cycles
-    uint8_t AND();
 
     /** Jump Instructions **/
     //JMP Abs

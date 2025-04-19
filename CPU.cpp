@@ -9,6 +9,11 @@ CPU::CPU() {
     opMatrix[0x18].addressing_mode = IMP;
     opMatrix[0x18].cycle_op_list.push_back(&CPU::CLC_cycle2);
     opMatrix[0x18].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //AND IMM
+    opMatrix[0x29].pneumonic = "AND";
+    opMatrix[0x29].addressing_mode = IMM;
+    opMatrix[0x29].cycle_op_list.push_back(&CPU::AND_IMM_cycle2);
+    opMatrix[0x29].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SEC
     opMatrix[0x38].pneumonic = "SEC";
     opMatrix[0x38].addressing_mode = IMP;
@@ -880,6 +885,33 @@ void CPU::load_SP() {
     //Don't set Z and N flags
 }
 
+/** Bitwise instructions **/
+void CPU::AND_IMM_cycle2() {
+    working_data = read(PC++);
+
+    overlap_op1 = &CPU::AND;
+    overlap_op2 = &CPU::store_ALU2A;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::AND() {
+    ALU_result = A & working_data;
+    if (ALU_result == 0)
+        setStatusReg(true, Z);
+    else
+        setStatusReg(false, Z);
+
+    if ((ALU_result & 0x80) != 0)
+        setStatusReg(true, N);
+    else
+        setStatusReg(false, N);
+}
+
+void CPU::store_ALU2A() {
+    A = ALU_result;
+}
+
 /** FLAG instructions **/
 void CPU::CLC_cycle2() {
     dummy_read();
@@ -994,24 +1026,6 @@ void CPU::SED_cycle2() {
 
 void CPU::set_decimal() {
     setStatusReg(true, D);
-}
-
-/****/
-uint8_t CPU::AND() {
-    A &= working_data;
-
-    if (A == 0)
-        setStatusReg(true, Z);
-    else
-        setStatusReg(false, Z);
-
-    if ((A & 0x80) != 0x00)
-        setStatusReg(true, N);
-    else
-        setStatusReg(false, N);
-
-    curr_micro_op++;
-    return 0;
 }
 
 /** Jump Instructions **/
