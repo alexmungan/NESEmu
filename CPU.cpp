@@ -44,6 +44,15 @@ CPU::CPU() {
     opMatrix[0x0D].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0x0D].cycle_op_list.push_back(&CPU::OR_final_cycle);
     opMatrix[0x0D].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //ASL ABS
+    opMatrix[0x0E].pneumonic = "ASL";
+    opMatrix[0x0E].addressing_mode = ABS;
+    opMatrix[0x0E].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x0E].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0x0E].cycle_op_list.push_back(&CPU::RMW_read_cycle);
+    opMatrix[0x0E].cycle_op_list.push_back(&CPU::ASL_dummy_write);
+    opMatrix[0x0E].cycle_op_list.push_back(&CPU::RMW_set_Z_N_C_write_cycle);
+    opMatrix[0x0E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR INDY
     opMatrix[0x11].pneumonic = "ORA";
     opMatrix[0x11].addressing_mode = INDY;
@@ -90,6 +99,16 @@ CPU::CPU() {
     opMatrix[0x1D].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
     opMatrix[0x1D].cycle_op_list.push_back(&CPU::OR_final_cycle);
     opMatrix[0x1D].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //ASL ABS,X
+    opMatrix[0x1E].pneumonic = "ASL";
+    opMatrix[0x1E].addressing_mode = ABSX;
+    opMatrix[0x1E].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x1E].cycle_op_list.push_back(&CPU::write_ABS_X_cycle3);
+    opMatrix[0x1E].cycle_op_list.push_back(&CPU::write_page_crossed_cycle);
+    opMatrix[0x1E].cycle_op_list.push_back(&CPU::RMW_read_cycle);
+    opMatrix[0x1E].cycle_op_list.push_back(&CPU::ASL_dummy_write);
+    opMatrix[0x1E].cycle_op_list.push_back(&CPU::RMW_set_Z_N_C_write_cycle);
+    opMatrix[0x1E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND INDX
     opMatrix[0x21].pneumonic = "AND";
     opMatrix[0x21].addressing_mode = INDX;

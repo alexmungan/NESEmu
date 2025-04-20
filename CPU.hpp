@@ -362,6 +362,23 @@ public:
     //Cycle 5: ASL_dummy_write
     //Cycle 6: RMW_set_Z_N_C_write_cycle()
 
+    //ASL ABS
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: fetch_adh_cycle3()
+    //Cycle 4: RMW_read_cycle()
+    //Cycle 5: ASL_dummy_write()
+    //Cycle 6: RMW_set_Z_N_C_write_cycle()
+
+    //ASL ABSX
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: write_ABS_X_cycle3()
+    //Cycle 4: write_page_crossed_cycle()
+    //Cycle 5: RMW_read_cycle()
+    //Cycle 6: ASL_dummy_write()
+    //Cycle 7: RMW_set_Z_N_C_write_cycle()
+
 
     /** Bitwise instructions **/
     //AND immediate
