@@ -398,6 +398,20 @@ public:
 
     //LSR ZP,X, LSR ABS, and LSR ABS,X are obvious at this point
 
+    //ROL
+    void ROL_Accum_cycle2();
+    void ROL();
+    //void store_ALU2A_ASL();
+    void ROL_dummy_write();
+    //void ASL_write_cycle();
+
+    //ROR
+    void ROR_Accum_cycle2();
+    void ROR();
+    //void store_ALU2A_LSR();
+    void ROR_dummy_write();
+    //void LSR_write_cycle();
+
     /** Bitwise instructions **/
     //AND immediate
     //Cycle 1: fetch_opcode()
