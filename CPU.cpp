@@ -652,11 +652,47 @@ CPU::CPU() {
     opMatrix[0xD8].addressing_mode = IMP;
     opMatrix[0xD8].cycle_op_list.push_back(&CPU::CLD_cycle2);
     opMatrix[0xD8].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //INC ZP
+    opMatrix[0xE6].pneumonic = "INC";
+    opMatrix[0xE6].addressing_mode = ZP;
+    opMatrix[0xE6].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xE6].cycle_op_list.push_back(&CPU::RMW_read_cycle);
+    opMatrix[0xE6].cycle_op_list.push_back(&CPU::INC_dummy_write);
+    opMatrix[0xE6].cycle_op_list.push_back(&CPU::INC_write_cycle);
+    opMatrix[0xE6].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //INC ABS
+    opMatrix[0xEE].pneumonic = "INC";
+    opMatrix[0xEE].addressing_mode = ABS;
+    opMatrix[0xEE].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xEE].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0xEE].cycle_op_list.push_back(&CPU::RMW_read_cycle);
+    opMatrix[0xEE].cycle_op_list.push_back(&CPU::INC_dummy_write);
+    opMatrix[0xEE].cycle_op_list.push_back(&CPU::INC_write_cycle);
+    opMatrix[0xEE].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //INC ZPX
+    opMatrix[0xF6].pneumonic = "INC";
+    opMatrix[0xF6].addressing_mode = ZPX;
+    opMatrix[0xF6].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xF6].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0xF6].cycle_op_list.push_back(&CPU::RMW_read_cycle);
+    opMatrix[0xF6].cycle_op_list.push_back(&CPU::INC_dummy_write);
+    opMatrix[0xF6].cycle_op_list.push_back(&CPU::INC_write_cycle);
+    opMatrix[0xF6].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SED
     opMatrix[0xFD].pneumonic = "SED";
     opMatrix[0xFD].addressing_mode = IMP;
     opMatrix[0xFD].cycle_op_list.push_back(&CPU::SED_cycle2);
     opMatrix[0xFD].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //INC ABS,X
+    opMatrix[0xFE].pneumonic = "INC";
+    opMatrix[0xFE].addressing_mode = ABSX;
+    opMatrix[0xFE].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xFE].cycle_op_list.push_back(&CPU::write_ABS_X_cycle3);
+    opMatrix[0xFE].cycle_op_list.push_back(&CPU::write_page_crossed_cycle);
+    opMatrix[0xFE].cycle_op_list.push_back(&CPU::RMW_read_cycle);
+    opMatrix[0xFE].cycle_op_list.push_back(&CPU::INC_dummy_write);
+    opMatrix[0xFE].cycle_op_list.push_back(&CPU::INC_write_cycle);
+    opMatrix[0xFE].cycle_op_list.push_back(&CPU::fetch_opcode);
 
     /** 3 interrupt sequences **/
     //Note: these are not really opcodes/instruction, they are just stored here for programming convenience
@@ -1238,6 +1274,36 @@ void CPU::TXS_cycle2() {
 void CPU::load_SP() {
     SP = working_data;
     //Don't set Z and N flags
+}
+
+/** Arithmetic instructions **/
+
+void CPU::INC_dummy_write() {
+    write(addr1, working_data);
+    ALU_result = working_data + 1;
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::INC_write_cycle() {
+    write(addr1, ALU_result);
+
+    if (ALU_result == 0)
+        setStatusReg(true, Z);
+    else
+        setStatusReg(false, Z);
+
+    if ((ALU_result & 0x80) != 0)
+        setStatusReg(true, N);
+    else
+        setStatusReg(false, N);
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+
+    curr_micro_op++;
+    interrupt_poll_cycle = true;
 }
 
 /** Shift instructions **/

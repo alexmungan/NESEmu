@@ -332,6 +332,16 @@ public:
     //Helper
     void load_SP();
 
+    /** Arithmetic **/
+    //INC ZP
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: RMW_read_cycle()
+    //Cycle 4: dummy_write to ZP, ALU_result <- working_data + 1
+    void INC_dummy_write();
+    //Cycle 5: write ALU_result to ZP, update Z and N flags, poll for interrupts
+    void INC_write_cycle();
+
     /** Shift instructions **/
     //ASL Accum
     //Cycle 1: fetch_opcode()
