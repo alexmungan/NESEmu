@@ -343,6 +343,9 @@ public:
     //Cycle 4: cycle 2 of next op, A <- ALU_result, set CZVN flags
     void store_ALU2A_ADC();
 
+    //The rest of the addressing modes are obvious
+    void ADC_final_cycle();
+
     //SBC IMM
     //Cycle 1: fetch_opcode()
     //Cycle 2: fetch IMM val, decode op, PC++
@@ -351,6 +354,9 @@ public:
     void SUB();
     //Cycle 4: cycle 2 of next op, A <- ALU_result, set CZVN flags
     void store_ALU2A_SBC();
+
+    //The rest of the addressing modes are obvious
+    void SBC_final_cycle();
 
     //INC ZP
     //Cycle 1: fetch_opcode()

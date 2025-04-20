@@ -347,6 +347,21 @@ CPU::CPU() {
     opMatrix[0x5E].cycle_op_list.push_back(&CPU::LSR_dummy_write);
     opMatrix[0x5E].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x5E].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //ADC INDX
+    opMatrix[0x61].pneumonic = "ADC";
+    opMatrix[0x61].addressing_mode = INDX;
+    opMatrix[0x61].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x61].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0x61].cycle_op_list.push_back(&CPU::IND_X_cycle4);
+    opMatrix[0x61].cycle_op_list.push_back(&CPU::IND_X_cycle5);
+    opMatrix[0x61].cycle_op_list.push_back(&CPU::ADC_final_cycle);
+    opMatrix[0x61].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //ADC ZP
+    opMatrix[0x65].pneumonic = "ADC";
+    opMatrix[0x65].addressing_mode = ZP;
+    opMatrix[0x65].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x65].cycle_op_list.push_back(&CPU::ADC_final_cycle);
+    opMatrix[0x65].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROR ZP
     opMatrix[0x66].pneumonic = "ROR";
     opMatrix[0x66].addressing_mode = ZP;
@@ -365,6 +380,13 @@ CPU::CPU() {
     opMatrix[0x6A].addressing_mode = Accum;
     opMatrix[0x6A].cycle_op_list.push_back(&CPU::ROR_Accum_cycle2);
     opMatrix[0x6A].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //ADC ABS
+    opMatrix[0x6D].pneumonic = "ADC";
+    opMatrix[0x6D].addressing_mode = ABS;
+    opMatrix[0x6D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x6D].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0x6D].cycle_op_list.push_back(&CPU::ADC_final_cycle);
+    opMatrix[0x6D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROR ABS
     opMatrix[0x6E].pneumonic = "ROR";
     opMatrix[0x6E].addressing_mode = ABS;
@@ -374,6 +396,22 @@ CPU::CPU() {
     opMatrix[0x6E].cycle_op_list.push_back(&CPU::ROR_dummy_write);
     opMatrix[0x6E].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x6E].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //ADC INDY
+    opMatrix[0x71].pneumonic = "ADC";
+    opMatrix[0x71].addressing_mode = INDY;
+    opMatrix[0x71].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x71].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
+    opMatrix[0x71].cycle_op_list.push_back(&CPU::read_IND_Y_cycle4);
+    opMatrix[0x71].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0x71].cycle_op_list.push_back(&CPU::ADC_final_cycle);
+    opMatrix[0x71].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //ADC ZP,X
+    opMatrix[0x75].pneumonic = "ADC";
+    opMatrix[0x75].addressing_mode = ZPX;
+    opMatrix[0x75].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x75].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0x75].cycle_op_list.push_back(&CPU::ADC_final_cycle);
+    opMatrix[0x75].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROR ZP,X
     opMatrix[0x76].pneumonic = "ROR";
     opMatrix[0x76].addressing_mode = ZPX;
@@ -388,6 +426,22 @@ CPU::CPU() {
     opMatrix[0x78].addressing_mode = IMP;
     opMatrix[0x78].cycle_op_list.push_back(&CPU::SEI_cycle2);
     opMatrix[0x78].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //ADC ABS,Y
+    opMatrix[0x79].pneumonic = "ADC";
+    opMatrix[0x79].addressing_mode = ABSY;
+    opMatrix[0x79].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x79].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
+    opMatrix[0x79].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0x79].cycle_op_list.push_back(&CPU::ADC_final_cycle);
+    opMatrix[0x79].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //ADC ABS,X
+    opMatrix[0x7D].pneumonic = "ADC";
+    opMatrix[0x7D].addressing_mode = ABSX;
+    opMatrix[0x7D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x7D].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
+    opMatrix[0x7D].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0x7D].cycle_op_list.push_back(&CPU::ADC_final_cycle);
+    opMatrix[0x7D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROR ABS,X
     opMatrix[0x7E].pneumonic = "ROR";
     opMatrix[0x7E].addressing_mode = ABSX;
@@ -708,6 +762,21 @@ CPU::CPU() {
     opMatrix[0xDE].cycle_op_list.push_back(&CPU::DEC_dummy_write);
     opMatrix[0xDE].cycle_op_list.push_back(&CPU::DEC_write_cycle);
     opMatrix[0xDE].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //SBC INDX
+    opMatrix[0xE1].pneumonic = "SBC";
+    opMatrix[0xE1].addressing_mode = INDX;
+    opMatrix[0xE1].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xE1].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0xE1].cycle_op_list.push_back(&CPU::IND_X_cycle4);
+    opMatrix[0xE1].cycle_op_list.push_back(&CPU::IND_X_cycle5);
+    opMatrix[0xE1].cycle_op_list.push_back(&CPU::SBC_final_cycle);
+    opMatrix[0xE1].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //SBC ZP
+    opMatrix[0xE5].pneumonic = "SBC";
+    opMatrix[0xE5].addressing_mode = ZP;
+    opMatrix[0xE5].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xE5].cycle_op_list.push_back(&CPU::SBC_final_cycle);
+    opMatrix[0xE5].cycle_op_list.push_back(&CPU::fetch_opcode);
     //INC ZP
     opMatrix[0xE6].pneumonic = "INC";
     opMatrix[0xE6].addressing_mode = ZP;
@@ -731,6 +800,13 @@ CPU::CPU() {
     opMatrix[0xEA].addressing_mode = IMP;
     opMatrix[0xEA].cycle_op_list.push_back(&CPU::NOP_cycle2);
     opMatrix[0xEA].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //SBC ABS
+    opMatrix[0xED].pneumonic = "SBC";
+    opMatrix[0xED].addressing_mode = ABS;
+    opMatrix[0xED].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xED].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0xED].cycle_op_list.push_back(&CPU::SBC_final_cycle);
+    opMatrix[0xED].cycle_op_list.push_back(&CPU::fetch_opcode);
     //INC ABS
     opMatrix[0xEE].pneumonic = "INC";
     opMatrix[0xEE].addressing_mode = ABS;
@@ -740,6 +816,22 @@ CPU::CPU() {
     opMatrix[0xEE].cycle_op_list.push_back(&CPU::INC_dummy_write);
     opMatrix[0xEE].cycle_op_list.push_back(&CPU::INC_write_cycle);
     opMatrix[0xEE].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //SBC INDY
+    opMatrix[0xF1].pneumonic = "SBC";
+    opMatrix[0xF1].addressing_mode = INDY;
+    opMatrix[0xF1].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xF1].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
+    opMatrix[0xF1].cycle_op_list.push_back(&CPU::read_IND_Y_cycle4);
+    opMatrix[0xF1].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0xF1].cycle_op_list.push_back(&CPU::SBC_final_cycle);
+    opMatrix[0xF1].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //SBC ZP,X
+    opMatrix[0xF5].pneumonic = "SBC";
+    opMatrix[0xF5].addressing_mode = ZPX;
+    opMatrix[0xF5].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xF5].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0xF5].cycle_op_list.push_back(&CPU::SBC_final_cycle);
+    opMatrix[0xF5].cycle_op_list.push_back(&CPU::fetch_opcode);
     //INC ZPX
     opMatrix[0xF6].pneumonic = "INC";
     opMatrix[0xF6].addressing_mode = ZPX;
@@ -750,9 +842,25 @@ CPU::CPU() {
     opMatrix[0xF6].cycle_op_list.push_back(&CPU::INC_write_cycle);
     opMatrix[0xF6].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SED
-    opMatrix[0xFD].pneumonic = "SED";
-    opMatrix[0xFD].addressing_mode = IMP;
-    opMatrix[0xFD].cycle_op_list.push_back(&CPU::SED_cycle2);
+    opMatrix[0xF8].pneumonic = "SED";
+    opMatrix[0xF8].addressing_mode = IMP;
+    opMatrix[0xF8].cycle_op_list.push_back(&CPU::SED_cycle2);
+    opMatrix[0xF8].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //SBC ABS,Y
+    opMatrix[0xF9].pneumonic = "SBC";
+    opMatrix[0xF9].addressing_mode = ABSY;
+    opMatrix[0xF9].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xF9].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
+    opMatrix[0xF9].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0xF9].cycle_op_list.push_back(&CPU::SBC_final_cycle);
+    opMatrix[0xF9].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //SBC ABS,X
+    opMatrix[0xFD].pneumonic = "SBC";
+    opMatrix[0xFD].addressing_mode = ABSX;
+    opMatrix[0xFD].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0xFD].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
+    opMatrix[0xFD].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
+    opMatrix[0xFD].cycle_op_list.push_back(&CPU::SBC_final_cycle);
     opMatrix[0xFD].cycle_op_list.push_back(&CPU::fetch_opcode);
     //INC ABS,X
     opMatrix[0xFE].pneumonic = "INC";
@@ -1365,6 +1473,24 @@ void CPU::SBC_IMM_cycle2() {
         (this->*overlap_op2)();
 
     working_data = read(PC++);
+
+    overlap_op1 = &CPU::SUB;
+    overlap_op2 = &CPU::store_ALU2A_SBC;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::ADC_final_cycle() {
+    working_data = read(addr1);
+
+    overlap_op1 = &CPU::ADD;
+    overlap_op2 = &CPU::store_ALU2A_ADC;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::SBC_final_cycle() {
+    working_data = read(addr1);
 
     overlap_op1 = &CPU::SUB;
     overlap_op2 = &CPU::store_ALU2A_SBC;
