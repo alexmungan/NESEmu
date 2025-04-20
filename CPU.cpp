@@ -24,6 +24,11 @@ CPU::CPU() {
     opMatrix[0x09].addressing_mode = IMM;
     opMatrix[0x09].cycle_op_list.push_back(&CPU::OR_IMM_cycle2);
     opMatrix[0x09].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //ASL Accum
+    opMatrix[0x0A].pneumonic = "ASL";
+    opMatrix[0x0A].addressing_mode = Accum;
+    opMatrix[0x0A].cycle_op_list.push_back(&CPU::ASL_Accum_cycle2);
+    opMatrix[0x0A].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR ABS
     opMatrix[0x0D].pneumonic = "ORA";
     opMatrix[0x0D].addressing_mode = ABS;
@@ -836,10 +841,10 @@ void CPU::write_IND_Y_cycle4() {
 
 /** Data Movement (access) **/
 void CPU::LDA_IMM_cycle2() {
-    working_data = read(PC++);
-
     if (overlap_op2 != nullptr)
         (this->*overlap_op2)();
+
+    working_data = read(PC++);
 
     overlap_op1 = &CPU::load_A;
     overlap_op2 = nullptr;
@@ -873,10 +878,10 @@ void CPU::load_A() {
 }
 
 void CPU::LDX_IMM_cycle2() {
-    working_data = read(PC++);
-
     if (overlap_op2 != nullptr)
         (this->*overlap_op2)();
+
+    working_data = read(PC++);
 
     overlap_op1 = &CPU::load_X;
     overlap_op2 = nullptr;
@@ -910,10 +915,10 @@ void CPU::load_X() {
 }
 
 void CPU::LDY_IMM_cycle2() {
-    working_data = read(PC++);
-
     if (overlap_op2 != nullptr)
         (this->*overlap_op2)();
+
+    working_data = read(PC++);
 
     overlap_op1 = &CPU::load_Y;
     overlap_op2 = nullptr;
@@ -1069,6 +1074,47 @@ void CPU::load_SP() {
     SP = working_data;
     //Don't set Z and N flags
 }
+
+/** Shift instructions **/
+void CPU::ASL_Accum_cycle2() {
+    dummy_read();
+
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = A;
+
+    overlap_op1 = &CPU::ASL;
+    overlap_op2 = &CPU::store_ALU2A_set_Z_N_C;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::ASL() {
+    ALU_result = A << 1;
+}
+
+void CPU::store_ALU2A_set_Z_N_C() {
+    A = ALU_result;
+
+    if (ALU_result == 0)
+        setStatusReg(true, Z);
+    else
+        setStatusReg(false, Z);
+
+    if ((ALU_result & 0x80) != 0)
+        setStatusReg(true, N);
+    else
+        setStatusReg(false, N);
+
+    //Set carry to bit 7 of original value of A
+    if ((working_data & 0x80) == 0x00)
+        setStatusReg(false, C);
+    else
+        setStatusReg(true, C);
+}
+
+
 
 /** Bitwise instructions **/
 void CPU::AND_IMM_cycle2() {

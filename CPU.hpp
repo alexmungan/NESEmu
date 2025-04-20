@@ -328,6 +328,26 @@ public:
     //Helper
     void load_SP();
 
+    /** Shift instructions **/
+    //ASL Accum
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: dummy_read(), Decode opcode, hold PC
+    void ASL_Accum_cycle2();
+    //Cycle 3 (start of next instr): fetch_opcode, ALU_result <- A << 0
+    void ASL();
+    //Cycle 4: cycle 2 of next instr, A <- ALU_result, update flags Z,N,C
+    void store_ALU2A_set_Z_N_C();
+
+    //ASL ZP
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: fetch data at ZP
+    void RMW_fetch_data_cycle();
+    //Cycle 4: dummy_write to ZP, ALU_result <- working_data << 1
+    //Cycle 5: write ALU_result to ZP, update Z,N,C flags, poll for interrupts
+    void RMW_set_Z_N_C_final_cycle();
+
+
     /** Bitwise instructions **/
     //AND immediate
     //Cycle 1: fetch_opcode()
