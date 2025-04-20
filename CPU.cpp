@@ -716,6 +716,11 @@ CPU::CPU() {
     opMatrix[0xE8].addressing_mode = IMP;
     opMatrix[0xE8].cycle_op_list.push_back(&CPU::INX_cycle2);
     opMatrix[0xE8].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //NOP
+    opMatrix[0xEA].pneumonic = "NOP";
+    opMatrix[0xEA].addressing_mode = IMP;
+    opMatrix[0xEA].cycle_op_list.push_back(&CPU::NOP_cycle2);
+    opMatrix[0xEA].cycle_op_list.push_back(&CPU::fetch_opcode);
     //INC ABS
     opMatrix[0xEE].pneumonic = "INC";
     opMatrix[0xEE].addressing_mode = ABS;
@@ -1948,6 +1953,14 @@ void CPU::push(uint16_t& address, uint8_t val) {
 
 uint8_t CPU::pull(uint16_t& address) {
     return read(address++);
+}
+
+/** NOP **/
+void CPU::NOP_cycle2() {
+    dummy_read();
+
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
 }
 
 /** Interrupts **/

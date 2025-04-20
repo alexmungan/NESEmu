@@ -603,6 +603,11 @@ public:
     void push(uint16_t& address, uint8_t val);
     uint8_t pull(uint16_t& address);
 
+    /** NOP **/
+    //Cycle 1: fetch_opcode()
+    //CYcle 2: dummy_read(), poll for interrupts
+    void NOP_cycle2();
+
     /** Interrupt Sequences **/
     /* Note: We do not poll for interrupts during interrupt sequences */
     //RESET
