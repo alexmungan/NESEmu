@@ -413,6 +413,9 @@ public:
     void EOR();
     void EOR_IMM_cycle2();
 
+    //OR and EOR Need special function b/c flags are set in same cycle as A unlike AND
+    void store_ALU2A_set_Z_N();
+
     //BIT ZP
     //Cycle 1: fetch_opcode()
     //Cycle 2: fetch_adl_cycle2()

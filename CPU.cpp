@@ -77,6 +77,12 @@ CPU::CPU() {
     opMatrix[0x21].cycle_op_list.push_back(&CPU::IND_X_cycle5);
     opMatrix[0x21].cycle_op_list.push_back(&CPU::AND_final_cycle);
     opMatrix[0x21].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //BIT ZP
+    opMatrix[0x24].pneumonic = "BIT";
+    opMatrix[0x24].addressing_mode = ZP;
+    opMatrix[0x24].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x24].cycle_op_list.push_back(&CPU::BIT_final_cycle);
+    opMatrix[0x24].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND ZP
     opMatrix[0x25].pneumonic = "AND";
     opMatrix[0x25].addressing_mode = ZP;
@@ -88,6 +94,13 @@ CPU::CPU() {
     opMatrix[0x29].addressing_mode = IMM;
     opMatrix[0x29].cycle_op_list.push_back(&CPU::AND_IMM_cycle2);
     opMatrix[0x29].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //BIT ABS
+    opMatrix[0x2C].pneumonic = "BIT";
+    opMatrix[0x2C].addressing_mode = ABS;
+    opMatrix[0x2C].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x2C].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0x2C].cycle_op_list.push_back(&CPU::BIT_final_cycle);
+    opMatrix[0x2C].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND ABS
     opMatrix[0x2D].pneumonic = "AND";
     opMatrix[0x2D].addressing_mode = ABS;
@@ -1086,7 +1099,7 @@ void CPU::OR_IMM_cycle2() {
         (this->*overlap_op2)();
 
     overlap_op1 = &CPU::OR;
-    overlap_op2 = &CPU::store_ALU2A;
+    overlap_op2 = &CPU::store_ALU2A_set_Z_N;
     interrupt_poll_cycle = true;
     curr_micro_op++;
 }
@@ -1095,7 +1108,7 @@ void CPU::OR_final_cycle() {
     working_data = read(addr1);
 
     overlap_op1 = &CPU::OR;
-    overlap_op2 = &CPU::store_ALU2A;
+    overlap_op2 = &CPU::store_ALU2A_set_Z_N;
     interrupt_poll_cycle = true;
     curr_micro_op++;
 }
@@ -1107,7 +1120,7 @@ void CPU::EOR_IMM_cycle2() {
         (this->*overlap_op2)();
 
     overlap_op1 = &CPU::EOR;
-    overlap_op2 = &CPU::store_ALU2A;
+    overlap_op2 = &CPU::store_ALU2A_set_Z_N;
     interrupt_poll_cycle = true;
     curr_micro_op++;
 }
@@ -1116,10 +1129,20 @@ void CPU::EOR_final_cycle() {
     working_data = read(addr1);
 
     overlap_op1 = &CPU::EOR;
-    overlap_op2 = &CPU::store_ALU2A;
+    overlap_op2 = &CPU::store_ALU2A_set_Z_N;
     interrupt_poll_cycle = true;
     curr_micro_op++;
 }
+
+void CPU::BIT_final_cycle() {
+    working_data = read(addr1);
+
+    overlap_op1 = &CPU::BIT;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
 
 void CPU::AND() {
     ALU_result = A & working_data;
@@ -1137,20 +1160,31 @@ void CPU::AND() {
 
 void CPU::OR() {
     ALU_result = A | working_data;
-
-    if (ALU_result == 0)
-        setStatusReg(true, Z);
-    else
-        setStatusReg(false, Z);
-
-    if ((ALU_result & 0x80) != 0)
-        setStatusReg(true, N);
-    else
-        setStatusReg(false, N);
 }
 
 void CPU::EOR() {
     ALU_result = A ^ working_data;
+}
+
+void CPU::BIT() {
+    ALU_result = A & working_data;
+
+    if (ALU_result == 0)
+        setStatusReg(true, Z);
+    else
+        setStatusReg(false, Z);
+
+    setStatusReg((working_data & 0x80), N);
+    setStatusReg((working_data & 0x40), V);
+}
+
+
+void CPU::store_ALU2A() {
+    A = ALU_result;
+}
+
+void CPU::store_ALU2A_set_Z_N() {
+    A = ALU_result;
 
     if (ALU_result == 0)
         setStatusReg(true, Z);
@@ -1163,9 +1197,6 @@ void CPU::EOR() {
         setStatusReg(false, N);
 }
 
-void CPU::store_ALU2A() {
-    A = ALU_result;
-}
 
 /** FLAG instructions **/
 void CPU::CLC_cycle2() {
