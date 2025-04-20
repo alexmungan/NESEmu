@@ -420,6 +420,11 @@ CPU::CPU() {
     opMatrix[0x86].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x86].cycle_op_list.push_back(&CPU::store_X);
     opMatrix[0x86].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //DEY
+    opMatrix[0x88].pneumonic = "DEY";
+    opMatrix[0x88].addressing_mode = IMP;
+    opMatrix[0x88].cycle_op_list.push_back(&CPU::DEY_cycle2);
+    opMatrix[0x88].cycle_op_list.push_back(&CPU::fetch_opcode);
     //TXA
     opMatrix[0x8A].pneumonic = "TXA";
     opMatrix[0x8A].addressing_mode = IMP;
@@ -660,6 +665,11 @@ CPU::CPU() {
     opMatrix[0xC8].addressing_mode = IMP;
     opMatrix[0xC8].cycle_op_list.push_back(&CPU::INY_cycle2);
     opMatrix[0xC8].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //DEX
+    opMatrix[0xCA].pneumonic = "DEX";
+    opMatrix[0xCA].addressing_mode = IMP;
+    opMatrix[0xCA].cycle_op_list.push_back(&CPU::DEX_cycle2);
+    opMatrix[0xCA].cycle_op_list.push_back(&CPU::fetch_opcode);
     //DEC ABS
     opMatrix[0xCE].pneumonic = "DEC";
     opMatrix[0xCE].addressing_mode = ABS;
@@ -1408,8 +1418,40 @@ void CPU::INY_cycle2() {
     curr_micro_op++;
 }
 
+void CPU::DEX_cycle2() {
+    dummy_read();
+
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = X;
+
+    overlap_op1 = &CPU::Decrement;
+    overlap_op2 = &CPU::store_ALU2X_Increment;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::DEY_cycle2() {
+    dummy_read();
+
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = Y;
+
+    overlap_op1 = &CPU::Decrement;
+    overlap_op2 = &CPU::store_ALU2Y_Increment;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
 void CPU::Increment() {
     ALU_result = working_data + 1;
+}
+
+void CPU::Decrement() {
+    ALU_result = working_data - 1;
 }
 
 void CPU::store_ALU2X_Increment() {

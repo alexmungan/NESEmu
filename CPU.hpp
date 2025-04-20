@@ -362,6 +362,11 @@ public:
     void INY_cycle2();
     void store_ALU2Y_Increment();
 
+    //DEX and DEY: same as INX and INY but decrementing
+    void DEX_cycle2();
+    void DEY_cycle2();
+    void Decrement();
+
     /** Shift instructions **/
     //ASL Accum
     //Cycle 1: fetch_opcode()
