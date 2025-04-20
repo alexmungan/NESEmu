@@ -355,6 +355,11 @@ CPU::CPU() {
     opMatrix[0x66].cycle_op_list.push_back(&CPU::ROR_dummy_write);
     opMatrix[0x66].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x66].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //ADC IMM
+    opMatrix[0x69].pneumonic = "ADC";
+    opMatrix[0x69].addressing_mode = IMM;
+    opMatrix[0x69].cycle_op_list.push_back(&CPU::ADC_IMM_cycle2);
+    opMatrix[0x69].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROR Accum
     opMatrix[0x6A].pneumonic = "ROR";
     opMatrix[0x6A].addressing_mode = Accum;
@@ -716,6 +721,11 @@ CPU::CPU() {
     opMatrix[0xE8].addressing_mode = IMP;
     opMatrix[0xE8].cycle_op_list.push_back(&CPU::INX_cycle2);
     opMatrix[0xE8].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //SBC IMM
+    opMatrix[0xE9].pneumonic = "SBC";
+    opMatrix[0xE9].addressing_mode = IMM;
+    opMatrix[0xE9].cycle_op_list.push_back(&CPU::SBC_IMM_cycle2);
+    opMatrix[0xE9].cycle_op_list.push_back(&CPU::fetch_opcode);
     //NOP
     opMatrix[0xEA].pneumonic = "NOP";
     opMatrix[0xEA].addressing_mode = IMP;
@@ -1338,6 +1348,75 @@ void CPU::load_SP() {
 }
 
 /** Arithmetic instructions **/
+void CPU::ADC_IMM_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = read(PC++);
+
+    overlap_op1 = &CPU::ADD;
+    overlap_op2 = &CPU::store_ALU2A_ADC;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::SBC_IMM_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = read(PC++);
+
+    overlap_op1 = &CPU::SUB;
+    overlap_op2 = &CPU::store_ALU2A_SBC;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::ADD() {
+    //Get carry value for readability
+    uint8_t carry;
+    if (getStatusReg(C))
+        carry = 0x01;
+    else
+        carry = 0x00;
+
+    ALU_result16 = static_cast<uint16_t>(A) + working_data + carry;
+}
+
+void CPU::SUB() {
+    //Get inverse of carry value for readability
+    uint8_t not_carry;
+    if (getStatusReg(C))
+        not_carry = 0x00;
+    else
+        not_carry = 0x01;
+
+    ALU_result16 = static_cast<uint16_t>(A) - working_data - not_carry;
+}
+
+void CPU::store_ALU2A_ADC() {
+    ALU_result = static_cast<uint8_t>(ALU_result16);
+
+    setStatusReg(ALU_result16 > 0xFF, C);
+    setStatusReg(ALU_result == 0, Z);
+    setStatusReg((ALU_result & 0x80) != 0, N);
+    //Checks to see if result is opposite sign of operands when they are both the same sign
+    setStatusReg((ALU_result^A) & (ALU_result^working_data) & 0x80, V);
+
+    A = ALU_result;
+}
+
+void CPU::store_ALU2A_SBC() {
+    ALU_result = static_cast<uint8_t>(ALU_result16);
+
+    setStatusReg(ALU_result16 <= 0xFF, C);
+    setStatusReg(ALU_result == 0, Z);
+    setStatusReg((ALU_result & 0x80) != 0, N);
+    //Checks to see if result is opposite sign of operands when they are both the same sign
+    setStatusReg((ALU_result^A) & (ALU_result^(~working_data)) & 0x80, V);
+
+    A = ALU_result;
+}
 
 void CPU::INC_dummy_write() {
     write(addr1, working_data);

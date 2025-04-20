@@ -54,6 +54,7 @@ public:
     uint16_t addr2 = 0x00; //Used for addressing modes w/ extra layer of indirection
     uint8_t working_data = 0x00; //Holds the value that will be used by instruction after addressing mode stuff has been handled, it may also hold an ALU result (for ADC instr for ex) but we must be careful not to modify working_data before storing this ALU result to A
     uint8_t ALU_result = 0x00;
+    uint16_t ALU_result16 = 0x00; //For ADC and SBC we need wider result so that we can check for overflow
     uint8_t curr_micro_op = 0;
     bool page_crossed = false; //Used in write and RMW instructions, read instructions handle things differently
     bool interrupt_poll_cycle = false; //Is set to true on the cycle where interrupt polling occurs (normally last cycle of an instruction)
@@ -333,6 +334,24 @@ public:
     void load_SP();
 
     /** Arithmetic **/
+    //ADC IMM
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch IMM val, decode op, PC++
+    void ADC_IMM_cycle2();
+    //Cycle 3 (start of next instr): fetch next opcode, ALU_result <- A + working_data + C
+    void ADD();
+    //Cycle 4: cycle 2 of next op, A <- ALU_result, set CZVN flags
+    void store_ALU2A_ADC();
+
+    //SBC IMM
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch IMM val, decode op, PC++
+    void SBC_IMM_cycle2();
+    //Cycle 3 (start of next instr): fetch next opcode, ALU_result <- A - working_data - ~C
+    void SUB();
+    //Cycle 4: cycle 2 of next op, A <- ALU_result, set CZVN flags
+    void store_ALU2A_SBC();
+
     //INC ZP
     //Cycle 1: fetch_opcode()
     //Cycle 2: fetch_adl_cycle2()
