@@ -146,6 +146,12 @@ public:
     //For write instructions
     void write_IND_Y_cycle4();
 
+    //The read data cycle for RMW instructions
+    //Once the final address to access the data for the instruction has been loaded/computer, this cycle fetches the data
+    void RMW_read_cycle();
+    //The write cycle for RMW instructions, specifically for instructions that modify flags Z,N,C
+    void RMW_set_Z_N_C_write_cycle();
+
     /** Data Movement (load ops)**/
     //LDA IMM
     //Cycle 1: fetch OP CODE and finish previous op (overlap_op1), PC++
@@ -342,10 +348,11 @@ public:
     //Cycle 1: fetch_opcode()
     //Cycle 2: fetch_adl_cycle2()
     //Cycle 3: fetch data at ZP
-    void RMW_fetch_data_cycle();
+    //void RMW_read_cycle();
     //Cycle 4: dummy_write to ZP, ALU_result <- working_data << 1
+    void ASL_dummy_write();
     //Cycle 5: write ALU_result to ZP, update Z,N,C flags, poll for interrupts
-    void RMW_set_Z_N_C_final_cycle();
+    //void RMW_set_Z_N_C_write_cycle();
 
 
     /** Bitwise instructions **/

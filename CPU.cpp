@@ -19,6 +19,14 @@ CPU::CPU() {
     opMatrix[0x05].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x05].cycle_op_list.push_back(&CPU::OR_final_cycle);
     opMatrix[0x05].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //ASL ZP
+    opMatrix[0x06].pneumonic = "ASL";
+    opMatrix[0x06].addressing_mode = ZP;
+    opMatrix[0x06].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x06].cycle_op_list.push_back(&CPU::RMW_read_cycle);
+    opMatrix[0x06].cycle_op_list.push_back(&CPU::ASL_dummy_write);
+    opMatrix[0x06].cycle_op_list.push_back(&CPU::RMW_set_Z_N_C_write_cycle);
+    opMatrix[0x06].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR IMM
     opMatrix[0x09].pneumonic = "ORA";
     opMatrix[0x09].addressing_mode = IMM;
@@ -838,6 +846,38 @@ void CPU::write_IND_Y_cycle4() {
     interrupt_poll_cycle = false;
 }
 
+void CPU::RMW_read_cycle() {
+    working_data = read(addr1);
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+void CPU::RMW_set_Z_N_C_write_cycle() {
+    write(addr1, ALU_result);
+
+    if (ALU_result == 0)
+        setStatusReg(true, Z);
+    else
+        setStatusReg(false, Z);
+
+    if ((ALU_result & 0x80) != 0)
+        setStatusReg(true, N);
+    else
+        setStatusReg(false, N);
+
+    //Set carry to bit 7 of original value of A
+    if ((working_data & 0x80) == 0x00)
+        setStatusReg(false, C);
+    else
+        setStatusReg(true, C);
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+
+    curr_micro_op++;
+    interrupt_poll_cycle = true;
+}
 
 /** Data Movement (access) **/
 void CPU::LDA_IMM_cycle2() {
@@ -1087,6 +1127,14 @@ void CPU::ASL_Accum_cycle2() {
     overlap_op1 = &CPU::ASL;
     overlap_op2 = &CPU::store_ALU2A_set_Z_N_C;
     interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::ASL_dummy_write() {
+    write(addr1, working_data);
+    ALU_result = working_data << 1;
+
+    interrupt_poll_cycle = false;
     curr_micro_op++;
 }
 
