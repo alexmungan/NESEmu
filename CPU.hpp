@@ -342,6 +342,21 @@ public:
     //Cycle 5: write ALU_result to ZP, update Z and N flags, poll for interrupts
     void INC_write_cycle();
 
+    //The other addressing modes for INC ZP are obvious from other RMW instrs
+
+    //INX
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: dummy_read, decode opcode, hold PC
+    void INX_cycle2();
+    //Cycle 3 (start of next instr): fetch_opcode, ALU_result <- X+1
+    void Increment();
+    //Cycle 4: cycle 2 of next instr, X <- ALU_result, set Z,N flags
+    void store_ALU2X_Increment();
+
+    //INY: same as INX but for Y
+    void INY_cycle2();
+    void store_ALU2Y_Increment();
+
     /** Shift instructions **/
     //ASL Accum
     //Cycle 1: fetch_opcode()

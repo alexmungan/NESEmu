@@ -647,6 +647,11 @@ CPU::CPU() {
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::LDX_fetch_data);
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //INY
+    opMatrix[0xC8].pneumonic = "INY";
+    opMatrix[0xC8].addressing_mode = IMP;
+    opMatrix[0xC8].cycle_op_list.push_back(&CPU::INY_cycle2);
+    opMatrix[0xC8].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CLD
     opMatrix[0xD8].pneumonic = "CLD";
     opMatrix[0xD8].addressing_mode = IMP;
@@ -660,6 +665,11 @@ CPU::CPU() {
     opMatrix[0xE6].cycle_op_list.push_back(&CPU::INC_dummy_write);
     opMatrix[0xE6].cycle_op_list.push_back(&CPU::INC_write_cycle);
     opMatrix[0xE6].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //INX
+    opMatrix[0xE8].pneumonic = "INX";
+    opMatrix[0xE8].addressing_mode = IMP;
+    opMatrix[0xE8].cycle_op_list.push_back(&CPU::INX_cycle2);
+    opMatrix[0xE8].cycle_op_list.push_back(&CPU::fetch_opcode);
     //INC ABS
     opMatrix[0xEE].pneumonic = "INC";
     opMatrix[0xEE].addressing_mode = ABS;
@@ -1304,6 +1314,66 @@ void CPU::INC_write_cycle() {
 
     curr_micro_op++;
     interrupt_poll_cycle = true;
+}
+
+void CPU::INX_cycle2() {
+    dummy_read();
+
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = X;
+
+    overlap_op1 = &CPU::Increment;
+    overlap_op2 = &CPU::store_ALU2X_Increment;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::INY_cycle2() {
+    dummy_read();
+
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = Y;
+
+    overlap_op1 = &CPU::Increment;
+    overlap_op2 = &CPU::store_ALU2Y_Increment;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::Increment() {
+    ALU_result = working_data + 1;
+}
+
+void CPU::store_ALU2X_Increment() {
+    X = ALU_result;
+
+    if (ALU_result == 0)
+        setStatusReg(true, Z);
+    else
+        setStatusReg(false, Z);
+
+    if ((ALU_result & 0x80) != 0)
+        setStatusReg(true, N);
+    else
+        setStatusReg(false, N);
+}
+
+void CPU::store_ALU2Y_Increment() {
+    Y = ALU_result;
+
+    if (ALU_result == 0)
+        setStatusReg(true, Z);
+    else
+        setStatusReg(false, Z);
+
+    if ((ALU_result & 0x80) != 0)
+        setStatusReg(true, N);
+    else
+        setStatusReg(false, N);
 }
 
 /** Shift instructions **/
