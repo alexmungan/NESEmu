@@ -344,6 +344,11 @@ public:
 
     //The other addressing modes for INC ZP are obvious from other RMW instrs
 
+    //DEC
+    //Same as INC but uses decrement operation
+    void DEC_dummy_write();
+    void DEC_write_cycle();
+
     //INX
     //Cycle 1: fetch_opcode()
     //Cycle 2: dummy_read, decode opcode, hold PC
