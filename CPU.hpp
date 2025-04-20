@@ -149,8 +149,6 @@ public:
     //The read data cycle for RMW instructions
     //Once the final address to access the data for the instruction has been loaded/computer, this cycle fetches the data
     void RMW_read_cycle();
-    //The write cycle for RMW instructions, specifically for instructions that modify flags Z,N,C
-    void RMW_set_Z_N_C_write_cycle();
 
     /** Data Movement (load ops)**/
     //LDA IMM
@@ -342,7 +340,7 @@ public:
     //Cycle 3 (start of next instr): fetch_opcode, ALU_result <- A << 0
     void ASL();
     //Cycle 4: cycle 2 of next instr, A <- ALU_result, update flags Z,N,C
-    void store_ALU2A_set_Z_N_C();
+    void store_ALU2A_ASL();
 
     //ASL ZP
     //Cycle 1: fetch_opcode()
@@ -352,7 +350,7 @@ public:
     //Cycle 4: dummy_write to ZP, ALU_result <- working_data << 1
     void ASL_dummy_write();
     //Cycle 5: write ALU_result to ZP, update Z,N,C flags, poll for interrupts
-    //void RMW_set_Z_N_C_write_cycle();
+    void ASL_write_cycle();
 
     //ASL ZP, X
     //Cycle 1: fetch_opcode()
@@ -360,7 +358,7 @@ public:
     //Cycle 3: ZP_X_cycle3
     //Cycle 4: RMW_read_cycle()
     //Cycle 5: ASL_dummy_write
-    //Cycle 6: RMW_set_Z_N_C_write_cycle()
+    //Cycle 6: ASL_write_cycle()
 
     //ASL ABS
     //Cycle 1: fetch_opcode()
@@ -368,7 +366,7 @@ public:
     //Cycle 3: fetch_adh_cycle3()
     //Cycle 4: RMW_read_cycle()
     //Cycle 5: ASL_dummy_write()
-    //Cycle 6: RMW_set_Z_N_C_write_cycle()
+    //Cycle 6: ASL_write_cycle()
 
     //ASL ABSX
     //Cycle 1: fetch_opcode()
@@ -377,8 +375,28 @@ public:
     //Cycle 4: write_page_crossed_cycle()
     //Cycle 5: RMW_read_cycle()
     //Cycle 6: ASL_dummy_write()
-    //Cycle 7: RMW_set_Z_N_C_write_cycle()
+    //Cycle 7: ASL_write_cycle()
 
+    //LSR Accum
+    //Cycle 1: fetch_opcode()
+    //Cycle 2(): dummy_read(), Decode opcode, hold PC
+    void LSR_Accum_cycle2();
+    //Cycle 3 (start of next instr): fetch_opcode, ALU_result <- A << 0
+    void LSR();
+    //Cycle 4: cycle 2 of next instr, A <- ALU_result, update flags Z,N,C
+    void store_ALU2A_LSR();
+
+    //LSR ZP
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: fetch data at ZP
+    //void RMW_read_cycle();
+    //Cycle 4: dummy_write to ZP, ALU_result <- working_data >> 1
+    void LSR_dummy_write();
+    //Cycle 5: write ALU_result to ZP, update Z,N,C flags, poll for interrupts
+    void LSR_write_cycle();
+
+    //LSR ZP,X, LSR ABS, and LSR ABS,X are obvious at this point
 
     /** Bitwise instructions **/
     //AND immediate

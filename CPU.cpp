@@ -25,7 +25,7 @@ CPU::CPU() {
     opMatrix[0x06].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x06].cycle_op_list.push_back(&CPU::RMW_read_cycle);
     opMatrix[0x06].cycle_op_list.push_back(&CPU::ASL_dummy_write);
-    opMatrix[0x06].cycle_op_list.push_back(&CPU::RMW_set_Z_N_C_write_cycle);
+    opMatrix[0x06].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x06].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR IMM
     opMatrix[0x09].pneumonic = "ORA";
@@ -51,7 +51,7 @@ CPU::CPU() {
     opMatrix[0x0E].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0x0E].cycle_op_list.push_back(&CPU::RMW_read_cycle);
     opMatrix[0x0E].cycle_op_list.push_back(&CPU::ASL_dummy_write);
-    opMatrix[0x0E].cycle_op_list.push_back(&CPU::RMW_set_Z_N_C_write_cycle);
+    opMatrix[0x0E].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x0E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR INDY
     opMatrix[0x11].pneumonic = "ORA";
@@ -76,7 +76,7 @@ CPU::CPU() {
     opMatrix[0x16].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
     opMatrix[0x16].cycle_op_list.push_back(&CPU::RMW_read_cycle);
     opMatrix[0x16].cycle_op_list.push_back(&CPU::ASL_dummy_write);
-    opMatrix[0x16].cycle_op_list.push_back(&CPU::RMW_set_Z_N_C_write_cycle);
+    opMatrix[0x16].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x16].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CLC
     opMatrix[0x18].pneumonic = "CLC";
@@ -107,7 +107,7 @@ CPU::CPU() {
     opMatrix[0x1E].cycle_op_list.push_back(&CPU::write_page_crossed_cycle);
     opMatrix[0x1E].cycle_op_list.push_back(&CPU::RMW_read_cycle);
     opMatrix[0x1E].cycle_op_list.push_back(&CPU::ASL_dummy_write);
-    opMatrix[0x1E].cycle_op_list.push_back(&CPU::RMW_set_Z_N_C_write_cycle);
+    opMatrix[0x1E].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x1E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND INDX
     opMatrix[0x21].pneumonic = "AND";
@@ -210,11 +210,24 @@ CPU::CPU() {
     opMatrix[0x45].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x45].cycle_op_list.push_back(&CPU::EOR_final_cycle);
     opMatrix[0x45].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LSR ZP
+    opMatrix[0x46].pneumonic = "LSR";
+    opMatrix[0x46].addressing_mode = ZP;
+    opMatrix[0x46].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x46].cycle_op_list.push_back(&CPU::RMW_read_cycle);
+    opMatrix[0x46].cycle_op_list.push_back(&CPU::LSR_dummy_write);
+    opMatrix[0x46].cycle_op_list.push_back(&CPU::LSR_write_cycle);
+    opMatrix[0x46].cycle_op_list.push_back(&CPU::fetch_opcode);
     //EOR IMM
     opMatrix[0x49].pneumonic = "EOR";
     opMatrix[0x49].addressing_mode = IMM;
     opMatrix[0x49].cycle_op_list.push_back(&CPU::EOR_IMM_cycle2);
     opMatrix[0x49].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LSR Accum
+    opMatrix[0x4A].pneumonic = "LSR";
+    opMatrix[0x4A].addressing_mode = Accum;
+    opMatrix[0x4A].cycle_op_list.push_back(&CPU::LSR_Accum_cycle2);
+    opMatrix[0x4A].cycle_op_list.push_back(&CPU::fetch_opcode);
     //JMP ABS
     opMatrix[0x4C].pneumonic = "JMP";
     opMatrix[0x4C].addressing_mode = ABS;
@@ -228,6 +241,15 @@ CPU::CPU() {
     opMatrix[0x4D].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0x4D].cycle_op_list.push_back(&CPU::EOR_final_cycle);
     opMatrix[0x4D].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LSR ABS
+    opMatrix[0x4E].pneumonic = "LSR";
+    opMatrix[0x4E].addressing_mode = ABS;
+    opMatrix[0x4E].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x4E].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0x4E].cycle_op_list.push_back(&CPU::RMW_read_cycle);
+    opMatrix[0x4E].cycle_op_list.push_back(&CPU::LSR_dummy_write);
+    opMatrix[0x4E].cycle_op_list.push_back(&CPU::LSR_write_cycle);
+    opMatrix[0x4E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //EOR INDY
     opMatrix[0x51].pneumonic = "EOR";
     opMatrix[0x51].addressing_mode = INDY;
@@ -244,6 +266,15 @@ CPU::CPU() {
     opMatrix[0x55].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
     opMatrix[0x55].cycle_op_list.push_back(&CPU::EOR_final_cycle);
     opMatrix[0x55].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LSR ZP,X
+    opMatrix[0x56].pneumonic = "LSR";
+    opMatrix[0x56].addressing_mode = ZPX;
+    opMatrix[0x56].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x56].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0x56].cycle_op_list.push_back(&CPU::RMW_read_cycle);
+    opMatrix[0x56].cycle_op_list.push_back(&CPU::LSR_dummy_write);
+    opMatrix[0x56].cycle_op_list.push_back(&CPU::LSR_write_cycle);
+    opMatrix[0x56].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CLI
     opMatrix[0x58].pneumonic = "CLI";
     opMatrix[0x58].addressing_mode = IMP;
@@ -265,6 +296,16 @@ CPU::CPU() {
     opMatrix[0x5D].cycle_op_list.push_back(&CPU::read_page_crossed_cycle);
     opMatrix[0x5D].cycle_op_list.push_back(&CPU::EOR_final_cycle);
     opMatrix[0x5D].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //LSR ABS,X
+    opMatrix[0x5E].pneumonic = "LSR";
+    opMatrix[0x5E].addressing_mode = ABSX;
+    opMatrix[0x5E].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x5E].cycle_op_list.push_back(&CPU::write_ABS_X_cycle3);
+    opMatrix[0x5E].cycle_op_list.push_back(&CPU::write_page_crossed_cycle);
+    opMatrix[0x5E].cycle_op_list.push_back(&CPU::RMW_read_cycle);
+    opMatrix[0x5E].cycle_op_list.push_back(&CPU::LSR_dummy_write);
+    opMatrix[0x5E].cycle_op_list.push_back(&CPU::LSR_write_cycle);
+    opMatrix[0x5E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SEI
     opMatrix[0x78].pneumonic = "SEI";
     opMatrix[0x78].addressing_mode = IMP;
@@ -881,32 +922,6 @@ void CPU::RMW_read_cycle() {
     interrupt_poll_cycle = false;
 }
 
-void CPU::RMW_set_Z_N_C_write_cycle() {
-    write(addr1, ALU_result);
-
-    if (ALU_result == 0)
-        setStatusReg(true, Z);
-    else
-        setStatusReg(false, Z);
-
-    if ((ALU_result & 0x80) != 0)
-        setStatusReg(true, N);
-    else
-        setStatusReg(false, N);
-
-    //Set carry to bit 7 of original value of A
-    if ((working_data & 0x80) == 0x00)
-        setStatusReg(false, C);
-    else
-        setStatusReg(true, C);
-
-    overlap_op1 = nullptr;
-    overlap_op2 = nullptr;
-
-    curr_micro_op++;
-    interrupt_poll_cycle = true;
-}
-
 /** Data Movement (access) **/
 void CPU::LDA_IMM_cycle2() {
     if (overlap_op2 != nullptr)
@@ -1153,7 +1168,7 @@ void CPU::ASL_Accum_cycle2() {
     working_data = A;
 
     overlap_op1 = &CPU::ASL;
-    overlap_op2 = &CPU::store_ALU2A_set_Z_N_C;
+    overlap_op2 = &CPU::store_ALU2A_ASL;
     interrupt_poll_cycle = true;
     curr_micro_op++;
 }
@@ -1166,11 +1181,71 @@ void CPU::ASL_dummy_write() {
     curr_micro_op++;
 }
 
+void CPU::LSR_dummy_write() {
+    write(addr1, working_data);
+    ALU_result = working_data >> 1;
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::ASL_write_cycle() {
+    write(addr1, ALU_result);
+
+    if (ALU_result == 0)
+        setStatusReg(true, Z);
+    else
+        setStatusReg(false, Z);
+
+    if ((ALU_result & 0x80) != 0)
+        setStatusReg(true, N);
+    else
+        setStatusReg(false, N);
+
+    //Set carry to bit 7 of original value of A
+    if ((working_data & 0x80) == 0x00)
+        setStatusReg(false, C);
+    else
+        setStatusReg(true, C);
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+
+    curr_micro_op++;
+    interrupt_poll_cycle = true;
+}
+
+void CPU::LSR_write_cycle() {
+    write(addr1, ALU_result);
+
+    if (ALU_result == 0)
+        setStatusReg(true, Z);
+    else
+        setStatusReg(false, Z);
+
+    if ((ALU_result & 0x80) != 0)
+        setStatusReg(true, N);
+    else
+        setStatusReg(false, N);
+
+    //Set carry to bit 0 of original value of A
+    if ((working_data & 0x01) == 0x00)
+        setStatusReg(false, C);
+    else
+        setStatusReg(true, C);
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+
+    curr_micro_op++;
+    interrupt_poll_cycle = true;
+}
+
 void CPU::ASL() {
     ALU_result = A << 1;
 }
 
-void CPU::store_ALU2A_set_Z_N_C() {
+void CPU::store_ALU2A_ASL() {
     A = ALU_result;
 
     if (ALU_result == 0)
@@ -1190,7 +1265,43 @@ void CPU::store_ALU2A_set_Z_N_C() {
         setStatusReg(true, C);
 }
 
+void CPU::LSR_Accum_cycle2() {
+    dummy_read();
 
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = A;
+
+    overlap_op1 = &CPU::LSR;
+    overlap_op2 = &CPU::store_ALU2A_LSR;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::LSR() {
+    ALU_result = A >> 1;
+}
+
+void CPU::store_ALU2A_LSR() {
+    A = ALU_result;
+
+    if (ALU_result == 0)
+        setStatusReg(true, Z);
+    else
+        setStatusReg(false, Z);
+
+    if ((ALU_result & 0x80) != 0)
+        setStatusReg(true, N);
+    else
+        setStatusReg(false, N);
+
+    //Set carry to bit 7 of original value of A
+    if ((working_data & 0x01) == 0x00)
+        setStatusReg(false, C);
+    else
+        setStatusReg(true, C);
+}
 
 /** Bitwise instructions **/
 void CPU::AND_IMM_cycle2() {
