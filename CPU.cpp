@@ -60,6 +60,15 @@ CPU::CPU() {
     opMatrix[0x15].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
     opMatrix[0x15].cycle_op_list.push_back(&CPU::OR_final_cycle);
     opMatrix[0x15].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //ASL ZP,X
+    opMatrix[0x16].pneumonic = "ASL";
+    opMatrix[0x16].addressing_mode = ZPX;
+    opMatrix[0x16].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x16].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
+    opMatrix[0x16].cycle_op_list.push_back(&CPU::RMW_read_cycle);
+    opMatrix[0x16].cycle_op_list.push_back(&CPU::ASL_dummy_write);
+    opMatrix[0x16].cycle_op_list.push_back(&CPU::RMW_set_Z_N_C_write_cycle);
+    opMatrix[0x16].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CLC
     opMatrix[0x18].pneumonic = "CLC";
     opMatrix[0x18].addressing_mode = IMP;

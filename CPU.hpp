@@ -354,6 +354,14 @@ public:
     //Cycle 5: write ALU_result to ZP, update Z,N,C flags, poll for interrupts
     //void RMW_set_Z_N_C_write_cycle();
 
+    //ASL ZP, X
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: ZP_X_cycle3
+    //Cycle 4: RMW_read_cycle()
+    //Cycle 5: ASL_dummy_write
+    //Cycle 6: RMW_set_Z_N_C_write_cycle()
+
 
     /** Bitwise instructions **/
     //AND immediate
