@@ -510,6 +510,13 @@ CPU::CPU() {
     opMatrix[0x8E].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0x8E].cycle_op_list.push_back(&CPU::store_X);
     opMatrix[0x8E].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //BCC
+    opMatrix[0x90].pneumonic = "BCC";
+    opMatrix[0x90].addressing_mode = REL;
+    opMatrix[0x90].cycle_op_list.push_back(&CPU::BCC_cycle2);
+    opMatrix[0x90].cycle_op_list.push_back(&CPU::branch_cycle3);
+    opMatrix[0x90].cycle_op_list.push_back(&CPU::branch_cycle4);
+    opMatrix[0x90].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STA (Indirect), Y
     opMatrix[0x91].pneumonic = "STA";
     opMatrix[0x91].addressing_mode = INDY;
@@ -2196,6 +2203,55 @@ void CPU::CPY_set_flags() {
     setStatusReg(Y >= working_data, C);
     setStatusReg(Y == working_data, Z);
     setStatusReg(((Y - working_data) & 0x80) != 0, N);
+}
+
+/** Branch instructions **/
+void CPU::BCC_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = read(PC++);
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+
+    if (getStatusReg(C)) { //Carry is set, then this becomes the final cycle of BCC
+        curr_micro_op += 2; //Skip branching cycle and page cross cycle
+        overlap_op1 = nullptr;
+        overlap_op2 = nullptr;
+        interrupt_poll_cycle = true;
+    }
+}
+
+void CPU::branch_cycle3() {
+    dummy_read();
+
+    ALU_result16 = PC + working_data; //add offset
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+
+    if ((PC & 0x0100) == (ALU_result16 & 0x0100)) { //page not crossed
+        PC = ALU_result16;
+        curr_micro_op += 1; //Skip page cross cycle
+        overlap_op1 = nullptr;
+        overlap_op2 = nullptr;
+        interrupt_poll_cycle = true;
+    }
+    else {
+        PC = ALU_result16 - 0x0100; //This cycle, the carry bit from adding PCL and offset should not have happened yet in cycle accurate emu
+    }
+
+}
+
+void CPU::branch_cycle4() {
+    dummy_read(PC);
+    PC = ALU_result16;
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+    curr_micro_op++;
+    interrupt_poll_cycle = true;
 }
 
 /** FLAG instructions **/

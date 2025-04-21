@@ -592,6 +592,18 @@ public:
     void CPY_set_flags();
     void CPY_final_cycle();
 
+    /** Branch Instructions **/
+    //BCC
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch offset, PC++, check carry to see if operation will continue
+    void BCC_cycle2();
+    //Cycle 3: dummy_read, PC <- PCH,PCL+offset
+    //Only if branch taken
+    void branch_cycle3();
+    //Cycle 4: dummy_read at PCH, PCL+offset, PC <- PCH+carry, PCL+offset
+    //Only if page crossed
+    void branch_cycle4();
+
     /** FLAG instructions **/
     //CLC
     //Cycle 1: fetch OP CODE and finish previous op (overlap_op1), PC++
