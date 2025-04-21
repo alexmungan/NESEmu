@@ -569,6 +569,28 @@ public:
     void BIT();
     //Cycle 7: whatever cycle 2 is of next instr, result is discarded
 
+    /** Compare Instructions **/
+    //CMP IMM
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: dummy_read(), Decode OP CODE, Hold PC, poll for interrupts
+    void CMP_IMM_cycle2();
+    //Cycle 3 (start of next instr): fetch next op, A - working_data (We don't really need to waste time doing this subtraction)
+    //Since nothing happens, we can just set overlap_op1 = nullptr in cycle 2
+    //Cycle 4: cycle 2 of next op, set C, Z, N flags for subtraction result (result is not stored anywhere)
+    void CMP_set_flags();
+
+    //Rest of addressing modes are obvious
+    void CMP_final_cycle();
+
+    //CPX
+    void CPX_IMM_cycle2();
+    void CPX_set_flags();
+    void CPX_final_cycle();
+
+    //CPY
+    void CPY_IMM_cycle2();
+    void CPY_set_flags();
+    void CPY_final_cycle();
 
     /** FLAG instructions **/
     //CLC
