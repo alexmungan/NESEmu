@@ -27,6 +27,12 @@ CPU::CPU() {
     opMatrix[0x06].cycle_op_list.push_back(&CPU::ASL_dummy_write);
     opMatrix[0x06].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x06].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //PHP
+    opMatrix[0x08].pneumonic = "PHP";
+    opMatrix[0x08].addressing_mode = IMP;
+    opMatrix[0x08].cycle_op_list.push_back(&CPU::PHP_cycle2);
+    opMatrix[0x08].cycle_op_list.push_back(&CPU::push_final_cycle);
+    opMatrix[0x08].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR IMM
     opMatrix[0x09].pneumonic = "ORA";
     opMatrix[0x09].addressing_mode = IMM;
@@ -53,6 +59,13 @@ CPU::CPU() {
     opMatrix[0x0E].cycle_op_list.push_back(&CPU::ASL_dummy_write);
     opMatrix[0x0E].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x0E].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //BPL
+    opMatrix[0x10].pneumonic = "BPL";
+    opMatrix[0x10].addressing_mode = REL;
+    opMatrix[0x10].cycle_op_list.push_back(&CPU::BPL_cycle2);
+    opMatrix[0x10].cycle_op_list.push_back(&CPU::branch_cycle3);
+    opMatrix[0x10].cycle_op_list.push_back(&CPU::branch_cycle4);
+    opMatrix[0x10].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR INDY
     opMatrix[0x11].pneumonic = "ORA";
     opMatrix[0x11].addressing_mode = INDY;
@@ -171,6 +184,13 @@ CPU::CPU() {
     opMatrix[0x2E].cycle_op_list.push_back(&CPU::ROL_dummy_write);
     opMatrix[0x2E].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x2E].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //BMI
+    opMatrix[0x30].pneumonic = "BMI";
+    opMatrix[0x30].addressing_mode = REL;
+    opMatrix[0x30].cycle_op_list.push_back(&CPU::BMI_cycle2);
+    opMatrix[0x30].cycle_op_list.push_back(&CPU::branch_cycle3);
+    opMatrix[0x30].cycle_op_list.push_back(&CPU::branch_cycle4);
+    opMatrix[0x30].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND INDY
     opMatrix[0x31].pneumonic = "AND";
     opMatrix[0x31].addressing_mode = INDY;
@@ -259,6 +279,12 @@ CPU::CPU() {
     opMatrix[0x46].cycle_op_list.push_back(&CPU::LSR_dummy_write);
     opMatrix[0x46].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x46].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //PHA
+    opMatrix[0x48].pneumonic = "PHA";
+    opMatrix[0x48].addressing_mode = IMP;
+    opMatrix[0x48].cycle_op_list.push_back(&CPU::PHA_cycle2);
+    opMatrix[0x48].cycle_op_list.push_back(&CPU::push_final_cycle);
+    opMatrix[0x48].cycle_op_list.push_back(&CPU::fetch_opcode);
     //EOR IMM
     opMatrix[0x49].pneumonic = "EOR";
     opMatrix[0x49].addressing_mode = IMM;
@@ -291,6 +317,13 @@ CPU::CPU() {
     opMatrix[0x4E].cycle_op_list.push_back(&CPU::LSR_dummy_write);
     opMatrix[0x4E].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x4E].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //BVC
+    opMatrix[0x50].pneumonic = "BVC";
+    opMatrix[0x50].addressing_mode = REL;
+    opMatrix[0x50].cycle_op_list.push_back(&CPU::BVC_cycle2);
+    opMatrix[0x50].cycle_op_list.push_back(&CPU::branch_cycle3);
+    opMatrix[0x50].cycle_op_list.push_back(&CPU::branch_cycle4);
+    opMatrix[0x50].cycle_op_list.push_back(&CPU::fetch_opcode);
     //EOR INDY
     opMatrix[0x51].pneumonic = "EOR";
     opMatrix[0x51].addressing_mode = INDY;
@@ -396,6 +429,13 @@ CPU::CPU() {
     opMatrix[0x6E].cycle_op_list.push_back(&CPU::ROR_dummy_write);
     opMatrix[0x6E].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x6E].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //BVS
+    opMatrix[0x70].pneumonic = "BVS";
+    opMatrix[0x70].addressing_mode = REL;
+    opMatrix[0x70].cycle_op_list.push_back(&CPU::BVS_cycle2);
+    opMatrix[0x70].cycle_op_list.push_back(&CPU::branch_cycle3);
+    opMatrix[0x70].cycle_op_list.push_back(&CPU::branch_cycle4);
+    opMatrix[0x70].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ADC INDY
     opMatrix[0x71].pneumonic = "ADC";
     opMatrix[0x71].addressing_mode = INDY;
@@ -646,6 +686,13 @@ CPU::CPU() {
     opMatrix[0xAE].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0xAE].cycle_op_list.push_back(&CPU::LDX_fetch_data);
     opMatrix[0xAE].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //BCS
+    opMatrix[0xB0].pneumonic = "BCS";
+    opMatrix[0xB0].addressing_mode = REL;
+    opMatrix[0xB0].cycle_op_list.push_back(&CPU::BCS_cycle2);
+    opMatrix[0xB0].cycle_op_list.push_back(&CPU::branch_cycle3);
+    opMatrix[0xB0].cycle_op_list.push_back(&CPU::branch_cycle4);
+    opMatrix[0xB0].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDA INDY
     opMatrix[0xB1].pneumonic = "LDA";
     opMatrix[0xB1].addressing_mode = INDY;
@@ -790,6 +837,13 @@ CPU::CPU() {
     opMatrix[0xCE].cycle_op_list.push_back(&CPU::DEC_dummy_write);
     opMatrix[0xCE].cycle_op_list.push_back(&CPU::DEC_write_cycle);
     opMatrix[0xCE].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //BNE
+    opMatrix[0xD0].pneumonic = "BNE";
+    opMatrix[0xD0].addressing_mode = REL;
+    opMatrix[0xD0].cycle_op_list.push_back(&CPU::BNE_cycle2);
+    opMatrix[0xD0].cycle_op_list.push_back(&CPU::branch_cycle3);
+    opMatrix[0xD0].cycle_op_list.push_back(&CPU::branch_cycle4);
+    opMatrix[0xD0].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CMP INDY
     opMatrix[0xD1].pneumonic = "CMP";
     opMatrix[0xD1].addressing_mode = INDY;
@@ -918,6 +972,13 @@ CPU::CPU() {
     opMatrix[0xEE].cycle_op_list.push_back(&CPU::INC_dummy_write);
     opMatrix[0xEE].cycle_op_list.push_back(&CPU::INC_write_cycle);
     opMatrix[0xEE].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //BEQ
+    opMatrix[0xF0].pneumonic = "BEQ";
+    opMatrix[0xF0].addressing_mode = REL;
+    opMatrix[0xF0].cycle_op_list.push_back(&CPU::BEQ_cycle2);
+    opMatrix[0xF0].cycle_op_list.push_back(&CPU::branch_cycle3);
+    opMatrix[0xF0].cycle_op_list.push_back(&CPU::branch_cycle4);
+    opMatrix[0xF0].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SBC INDY
     opMatrix[0xF1].pneumonic = "SBC";
     opMatrix[0xF1].addressing_mode = INDY;
@@ -2223,6 +2284,125 @@ void CPU::BCC_cycle2() {
     }
 }
 
+void CPU::BCS_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = read(PC++);
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+
+    if (!getStatusReg(C)) { //Carry is NOT set, then this becomes the final cycle of BCS
+        curr_micro_op += 2; //Skip branching cycle and page cross cycle
+        overlap_op1 = nullptr;
+        overlap_op2 = nullptr;
+        interrupt_poll_cycle = true;
+    }
+}
+
+void CPU::BEQ_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = read(PC++);
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+
+    if (!getStatusReg(Z)) { //Zero is not set - then not equal, then this becomes the final cycle of BEQ
+        curr_micro_op += 2; //Skip branching cycle and page cross cycle
+        overlap_op1 = nullptr;
+        overlap_op2 = nullptr;
+        interrupt_poll_cycle = true;
+    }
+}
+
+void CPU::BNE_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = read(PC++);
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+
+    if (getStatusReg(Z)) { //Zero is set so they are equal -> don't branch, then this becomes the final cycle of BNE
+        curr_micro_op += 2; //Skip branching cycle and page cross cycle
+        overlap_op1 = nullptr;
+        overlap_op2 = nullptr;
+        interrupt_poll_cycle = true;
+    }
+}
+
+void CPU::BPL_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = read(PC++);
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+
+    if (getStatusReg(N)) { //Negative is set, then this becomes the final cycle of BPL
+        curr_micro_op += 2; //Skip branching cycle and page cross cycle
+        overlap_op1 = nullptr;
+        overlap_op2 = nullptr;
+        interrupt_poll_cycle = true;
+    }
+}
+
+void CPU::BMI_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = read(PC++);
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+
+    if (!getStatusReg(N)) { //Negative is NOT set, then this becomes the final cycle of BMI
+        curr_micro_op += 2; //Skip branching cycle and page cross cycle
+        overlap_op1 = nullptr;
+        overlap_op2 = nullptr;
+        interrupt_poll_cycle = true;
+    }
+}
+
+void CPU::BVC_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = read(PC++);
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+
+    if (getStatusReg(V)) { //Overflow is set, then this becomes the final cycle of BVC
+        curr_micro_op += 2; //Skip branching cycle and page cross cycle
+        overlap_op1 = nullptr;
+        overlap_op2 = nullptr;
+        interrupt_poll_cycle = true;
+    }
+}
+
+void CPU::BVS_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    working_data = read(PC++);
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+
+    if (!getStatusReg(V)) { //Overflow is NOT set, then this becomes the final cycle of BVS
+        curr_micro_op += 2; //Skip branching cycle and page cross cycle
+        overlap_op1 = nullptr;
+        overlap_op2 = nullptr;
+        interrupt_poll_cycle = true;
+    }
+}
+
 void CPU::branch_cycle3() {
     dummy_read();
 
@@ -2391,8 +2571,45 @@ uint8_t CPU::pull(uint16_t& address) {
     return read(address++);
 }
 
+void CPU::PHA_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    dummy_read();
+
+    working_data = A;
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::PHP_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    dummy_read();
+
+    working_data = status_reg | 0b00110000;
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+
+void CPU::push_final_cycle() {
+    write(STACK_START + SP, working_data);
+    SP--;
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+
 /** NOP **/
 void CPU::NOP_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
     dummy_read();
 
     interrupt_poll_cycle = true;

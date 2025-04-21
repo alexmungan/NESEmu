@@ -604,6 +604,27 @@ public:
     //Only if page crossed
     void branch_cycle4();
 
+    //BCS
+    void BCS_cycle2();
+
+    //BEQ
+    void BEQ_cycle2();
+
+    //BNE
+    void BNE_cycle2();
+
+    //BPL
+    void BPL_cycle2();
+
+    //BMI
+    void BMI_cycle2();
+
+    //BVC
+    void BVC_cycle2();
+
+    //BVS
+    void BVS_cycle2();
+
     /** FLAG instructions **/
     //CLC
     //Cycle 1: fetch OP CODE and finish previous op (overlap_op1), PC++
@@ -661,6 +682,16 @@ public:
     //Helper function to push value onto stack
     void push(uint16_t& address, uint8_t val);
     uint8_t pull(uint16_t& address);
+
+    //PHA
+    //Cycle 1: fetch_opcode
+    //Cycle 2: dummy_read, decode opcode, hold PC
+    void PHA_cycle2();
+    //Cycle 3: write A to 0x0100 + SP, then decrement SP
+    void push_final_cycle();
+
+    //PHP
+    void PHP_cycle2();
 
     /** NOP **/
     //Cycle 1: fetch_opcode()
