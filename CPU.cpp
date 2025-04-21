@@ -2226,7 +2226,7 @@ void CPU::BCC_cycle2() {
 void CPU::branch_cycle3() {
     dummy_read();
 
-    ALU_result16 = PC + working_data; //add offset
+    ALU_result16 = PC + static_cast<int8_t>(working_data); //add offset
 
     curr_micro_op++;
     interrupt_poll_cycle = false;
