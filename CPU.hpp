@@ -693,6 +693,20 @@ public:
     //PHP
     void PHP_cycle2();
 
+    //PLA
+    //Cycle 1: fetch_opcode();
+    //Cycle 2: dummy_read, decode opcode, hold PC
+    void pull_cycle2();
+    //Cycle 3: increment SP
+    void pull_cycle3();
+    //Cycle 4: read val at STACK_START + SP
+    void PLA_final_cycle();
+    //Cycle 5 (start of next instr): fetch next opcode, store result to A, update Z and N flags
+
+    //PLP
+    void PLP_final_cycle();
+    void restore_flags(); //helper
+
     /** NOP **/
     //Cycle 1: fetch_opcode()
     //CYcle 2: dummy_read(), poll for interrupts

@@ -151,6 +151,13 @@ CPU::CPU() {
     opMatrix[0x26].cycle_op_list.push_back(&CPU::ROL_dummy_write);
     opMatrix[0x26].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x26].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //PLP
+    opMatrix[0x28].pneumonic = "PLP";
+    opMatrix[0x28].addressing_mode = IMP;
+    opMatrix[0x28].cycle_op_list.push_back(&CPU::pull_cycle2);
+    opMatrix[0x28].cycle_op_list.push_back(&CPU::pull_cycle3);
+    opMatrix[0x28].cycle_op_list.push_back(&CPU::PLP_final_cycle);
+    opMatrix[0x28].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND IMM
     opMatrix[0x29].pneumonic = "AND";
     opMatrix[0x29].addressing_mode = IMM;
@@ -403,6 +410,13 @@ CPU::CPU() {
     opMatrix[0x66].cycle_op_list.push_back(&CPU::ROR_dummy_write);
     opMatrix[0x66].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x66].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //PLA
+    opMatrix[0x68].pneumonic = "PLA";
+    opMatrix[0x68].addressing_mode = IMP;
+    opMatrix[0x68].cycle_op_list.push_back(&CPU::pull_cycle2);
+    opMatrix[0x68].cycle_op_list.push_back(&CPU::pull_cycle3);
+    opMatrix[0x68].cycle_op_list.push_back(&CPU::PLA_final_cycle);
+    opMatrix[0x68].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ADC IMM
     opMatrix[0x69].pneumonic = "ADC";
     opMatrix[0x69].addressing_mode = IMM;
@@ -2602,6 +2616,45 @@ void CPU::push_final_cycle() {
     overlap_op2 = nullptr;
     interrupt_poll_cycle = true;
     curr_micro_op++;
+}
+
+void CPU::pull_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    dummy_read();
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+
+void CPU::pull_cycle3() {
+    SP++;
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::PLA_final_cycle() {
+    working_data = read(STACK_START + SP);
+
+    overlap_op1 = &CPU::load_A;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::PLP_final_cycle() {
+    working_data = read(STACK_START + SP);
+
+    overlap_op1 = &CPU::restore_flags;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::restore_flags() {
+    status_reg = (status_reg & 0b00110000) | (working_data & 0b11001111);
 }
 
 
