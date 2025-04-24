@@ -427,6 +427,14 @@ CPU::CPU() {
     opMatrix[0x6A].addressing_mode = Accum;
     opMatrix[0x6A].cycle_op_list.push_back(&CPU::ROR_Accum_cycle2);
     opMatrix[0x6A].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //JMP IND
+    opMatrix[0x6C].pneumonic = "JMP";
+    opMatrix[0x6C].addressing_mode = IND;
+    opMatrix[0x6C].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x6C].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
+    opMatrix[0x6C].cycle_op_list.push_back(&CPU::JMP_IND_cycle4);
+    opMatrix[0x6C].cycle_op_list.push_back(&CPU::JMP_IND_cycle5);
+    opMatrix[0x6C].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ADC ABS
     opMatrix[0x6D].pneumonic = "ADC";
     opMatrix[0x6D].addressing_mode = ABS;
@@ -2568,6 +2576,23 @@ void CPU::set_decimal() {
 void CPU::JMP_ABS_cycle3() {
     addr1 |= (static_cast<uint16_t>(read(PC++)) << 8);
     PC = addr1;
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::JMP_IND_cycle4() {
+    addr2 = read(addr1);
+    addr1 = (addr1 & 0xFF00) | ((addr1 + 1) & 0x00FF); //Equal to addr1++ but we do not allow page to be changed (known bug in the 6502)
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::JMP_IND_cycle5() {
+    addr2 |= (static_cast<uint8_t>(read(addr1)) << 8);
 
     overlap_op1 = nullptr;
     overlap_op2 = nullptr;

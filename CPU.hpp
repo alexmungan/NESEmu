@@ -676,7 +676,20 @@ public:
     //void fetch_adl_cycle2();
     //Cycle 3: fetch adh, PC <-- adh, adl, poll for interrupts
     void JMP_ABS_cycle3();
-    //Cycle 4 (start of next instr): fetch next OP CODE, no overlapped op, PC++
+    //No pipelining
+
+    //JMP Indirect
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch lsb of indirect address (addr1), decode OP, PC++
+    //fetch_adl_cycle2();
+    //Cycle 3: fetch msb of indirect address (addr1), PC++
+    //fetch_adh_cycle3()
+    //Cycle 4: fetch adl (addr2) at addr1, addr1 + 1 (note: this increment should wrap the address if a page is crossed - this is considered a bug/error inn the implementation of the 6502 processor)
+    void JMP_IND_cycle4();
+    //Cycle 5: fetch adh (addr2) at addr1 + 1, PC = adh, adl
+    void JMP_IND_cycle5();
+    //No pipelining
+
 
     /** Stack **/
     //Helper function to push value onto stack
