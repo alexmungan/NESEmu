@@ -396,6 +396,15 @@ CPU::CPU() {
     opMatrix[0x5E].cycle_op_list.push_back(&CPU::LSR_dummy_write);
     opMatrix[0x5E].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x5E].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //RTS
+    opMatrix[0x60].pneumonic = "RTS";
+    opMatrix[0x60].addressing_mode = IMP;
+    opMatrix[0x60].cycle_op_list.push_back(&CPU::RTS_cycle2);
+    opMatrix[0x60].cycle_op_list.push_back(&CPU::RTS_cycle3);
+    opMatrix[0x60].cycle_op_list.push_back(&CPU::RTS_cycle4);
+    opMatrix[0x60].cycle_op_list.push_back(&CPU::RTS_cycle5);
+    opMatrix[0x60].cycle_op_list.push_back(&CPU::RTS_cycle6);
+    opMatrix[0x60].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ADC INDX
     opMatrix[0x61].pneumonic = "ADC";
     opMatrix[0x61].addressing_mode = INDX;
@@ -2637,6 +2646,51 @@ void CPU::JSR_cycle6() {
     addr1 |= (static_cast<uint16_t>(read(PC++)) << 8);
     PC = addr1;
     SP = addr2 - STACK_START;
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
+void CPU::RTS_cycle2() {
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    dummy_read();
+    PC++;
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::RTS_cycle3() {
+    addr1 = STACK_START + SP;
+    pull(addr1); //dummy read above top of stack
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::RTS_cycle4() {
+    addr2 = pull(addr1); //PCL, addr1++
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::RTS_cycle5() {
+    SP = addr1 - STACK_START;
+    addr2 |= static_cast<uint16_t>(read(addr1)) << 8; //PCH, Note: addr1 not incremented
+    PC = addr2;
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::RTS_cycle6() {
+    dummy_read();
+    PC++;
 
     overlap_op1 = nullptr;
     overlap_op2 = nullptr;

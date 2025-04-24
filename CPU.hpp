@@ -703,6 +703,19 @@ public:
     //There doesn't appear to be any overlap with the next instruction's fetch. Maybe SP is, but it is an internal register and nothing could access it such that is would matter.
     void JSR_cycle6();
 
+    //RTS
+    //Cycle 1: fetch_opcde()
+    //Cycle 2: dummy_read(), PC++
+    void RTS_cycle2();
+    //Cycle 3: dummy read stack top, increment SP
+    void RTS_cycle3();
+    //Cycle 4: pull PCL from stack, increment SP
+    void RTS_cycle4();
+    //Cycle 5: SP updated, pull PCH from stack, PC is set to PCH,PCL
+    void RTS_cycle5();
+    //Cycle 6: dummy read PC, Increment PC
+    void RTS_cycle6();
+
     /** Stack **/
     //Helper function to push value onto stack
     void push(uint16_t& address, uint8_t val);
