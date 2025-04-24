@@ -19,6 +19,7 @@ constexpr size_t MIRROR_RAM_END = 0x1FFF; //End of mirrored RAM
 //PRG-ROM
 constexpr size_t PRG_ROM_START = 0x8000;
 constexpr size_t PRG_ROM_END = 0xFFFF;
+constexpr size_t BANK1_END = 0xBFFF;
 
 //Stack
 constexpr size_t STACK_START = 0x0100;

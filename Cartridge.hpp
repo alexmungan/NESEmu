@@ -19,6 +19,7 @@ public:
 private:
     std::vector<uint8_t> PRG_ROM;
     std::vector<uint8_t> CHR_ROM;
+    size_t PRG_ROM_banks = 0;
 
 public:
     //Use the filepath to the .nes file and use contents to init CHR-ROM and PRG-ROM

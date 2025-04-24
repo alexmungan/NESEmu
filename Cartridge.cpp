@@ -49,7 +49,8 @@ void Cartridge::loadROM(const std::string &rom_path) {
     }
 
     //At byte 4 of .nes, get PRG-ROM size (in units of 16 kiB) and converts to bytes
-    size_t PRG_ROM_size = rom_image[4] * 16 * KIBIBYTE;
+    PRG_ROM_banks = rom_image[4];
+    size_t PRG_ROM_size = PRG_ROM_banks * 16 * KIBIBYTE;
     PRG_ROM.resize(PRG_ROM_size);
     //Load PRG-ROM into buffer
     if (((rom_image[6] & 0x04) >> 2) == 1) { //Check if there is trainer in ROM file
@@ -66,7 +67,10 @@ void Cartridge::loadROM(const std::string &rom_path) {
 }
 
 uint8_t Cartridge::readPRG(uint16_t address) {
-    return PRG_ROM[address - PRG_ROM_START];
+    if (PRG_ROM_banks == 1) //If there is only one bank in the cartridge, then this bank is mirrored to $C000
+        return PRG_ROM[(address & BANK1_END) - PRG_ROM_START];
+    else //There are 2 banks of code, fully populating the address space reserved for PRG-ROM, if there were more than 2 banks--> we would need a mapper + bank switching
+        return PRG_ROM[address - PRG_ROM_START];
 }
 
 uint8_t Cartridge::readCHR(uint16_t address) {
