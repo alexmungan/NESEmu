@@ -122,6 +122,15 @@ CPU::CPU() {
     opMatrix[0x1E].cycle_op_list.push_back(&CPU::ASL_dummy_write);
     opMatrix[0x1E].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x1E].cycle_op_list.push_back(&CPU::fetch_opcode);
+    //JSR
+    opMatrix[0x20].pneumonic = "JSR";
+    opMatrix[0x20].addressing_mode = ABS;
+    opMatrix[0x20].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
+    opMatrix[0x20].cycle_op_list.push_back(&CPU::JSR_cycle3);
+    opMatrix[0x20].cycle_op_list.push_back(&CPU::JSR_cycle4);
+    opMatrix[0x20].cycle_op_list.push_back(&CPU::JSR_cycle5);
+    opMatrix[0x20].cycle_op_list.push_back(&CPU::JSR_cycle6);
+    opMatrix[0x20].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND INDX
     opMatrix[0x21].pneumonic = "AND";
     opMatrix[0x21].addressing_mode = INDX;
@@ -2600,6 +2609,41 @@ void CPU::JMP_IND_cycle5() {
     curr_micro_op++;
 }
 
+void CPU::JSR_cycle3() {
+    dummy_read(STACK_START + SP);
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::JSR_cycle4() {
+    uint8_t PCH = (PC & 0xFF00) >> 8;
+    addr2 = STACK_START + SP; //Temp Stack Pointer
+    push(addr2, PCH);
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::JSR_cycle5() {
+    uint8_t PCL = (PC & 0x00FF);
+    push(addr2, PCL);
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::JSR_cycle6() {
+    addr1 |= (static_cast<uint16_t>(read(PC++)) << 8);
+    PC = addr1;
+    SP = addr2 - STACK_START;
+
+    overlap_op1 = nullptr;
+    overlap_op2 = nullptr;
+    interrupt_poll_cycle = true;
+    curr_micro_op++;
+}
+
 /** Stack **/
 void CPU::push(uint16_t& address, uint8_t val) {
     write(address, val);
@@ -2759,7 +2803,7 @@ void CPU::interrupt_seq_cycle5() {
 }
 
 void CPU::IRQ_cycle6() {
-    SP = addr1; //Store SP
+    SP = addr1 - STACK_START; //Store SP
     addr1 = static_cast<uint16_t>(read(0xFFFE));
 
     curr_micro_op++;
@@ -2834,7 +2878,7 @@ void CPU::RTI_cycle5() {
 }
 
 void CPU::RTI_cycle6() {
-    SP = addr1; //Store SP (before this cycles increment in pull call)
+    SP = addr1 - STACK_START; //Store SP (before this cycles increment in pull call)
     addr2 |= static_cast<uint16_t>(pull(addr1)) << 8; //pull PCH
     PC = addr2;
 

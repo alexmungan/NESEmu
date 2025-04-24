@@ -690,6 +690,18 @@ public:
     void JMP_IND_cycle5();
     //No pipelining
 
+    //JSR ABS
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch_adl_cycle2()
+    //Cycle 3: dummy read top of stack
+    void JSR_cycle3();
+    //Cycle 4: push PCH to STACK_START + SP, SP-- (note: SP itself isn't modified, a copy of it in some internal buffer is and its final value after several decrements is stored at the end of the instr/start of next??)
+    void JSR_cycle4();
+    //Cycle 5: push PCL to STACK_START + SP, SP--
+    void JSR_cycle5();
+    //Cycle 6: fetch adh from next instruction byte, PC++, Set PC to adh,adl, poll for interrupts, update SP
+    //There doesn't appear to be any overlap with the next instruction's fetch. Maybe SP is, but it is an internal register and nothing could access it such that is would matter.
+    void JSR_cycle6();
 
     /** Stack **/
     //Helper function to push value onto stack
