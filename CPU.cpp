@@ -4,6 +4,16 @@
 CPU::CPU() {
     //Initialize the opcode matrix
     opMatrix.resize(16*16 + 3); //3 is for the interrupt sequences
+    //BRK
+    opMatrix[0x00].pneumonic = "BRK";
+    opMatrix[0x00].addressing_mode = IMP;
+    opMatrix[0x00].cycle_op_list.push_back(&CPU::BRK_cycle2);
+    opMatrix[0x00].cycle_op_list.push_back(&CPU::interrupt_seq_cycle3);
+    opMatrix[0x00].cycle_op_list.push_back(&CPU::interrupt_seq_cycle4);
+    opMatrix[0x00].cycle_op_list.push_back(&CPU::BRK_cycle5);
+    opMatrix[0x00].cycle_op_list.push_back(&CPU::IRQ_cycle6);
+    opMatrix[0x00].cycle_op_list.push_back(&CPU::IRQ_cycle7);
+    opMatrix[0x00].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR INDX
     opMatrix[0x01].pneumonic = "ORA";
     opMatrix[0x01].addressing_mode = INDX;
@@ -2811,7 +2821,6 @@ void CPU::fetch_RESET_vector_MSB() {
 }
 
 void CPU::interrupt_seq_cycle1() {
-    std::cout <<"HERE\n";
     dummy_read();
 
     if (overlap_op1 != nullptr)
@@ -2822,7 +2831,6 @@ void CPU::interrupt_seq_cycle1() {
 }
 
 void CPU::interrupt_seq_cycle2() {
-    std::cout <<"HERE\n";
     dummy_read();
 
     if (overlap_op2 != nullptr)
@@ -2850,7 +2858,7 @@ void CPU::interrupt_seq_cycle4() {
 }
 
 void CPU::interrupt_seq_cycle5() {
-    push(addr1, status_reg); //SP-- (really addr1 internally for now)
+    push(addr1, status_reg & 0b11101111); //SP-- (really addr1 internally for now)
 
     curr_micro_op++;
     interrupt_poll_cycle = false;
@@ -2876,6 +2884,26 @@ void CPU::IRQ_cycle7() {
     interrupt_poll_cycle = false;
     curr_micro_op++;
 }
+
+void CPU::BRK_cycle2() {
+    dummy_read();
+    PC++;
+
+    if (overlap_op2 != nullptr)
+        (this->*overlap_op2)();
+
+    interrupt_poll_cycle = false;
+    curr_micro_op++;
+}
+
+void CPU::BRK_cycle5() {
+    push(addr1, status_reg | 0b00010000); //SP-- (really addr1 internally for now)
+
+    curr_micro_op++;
+    interrupt_poll_cycle = false;
+}
+
+
 
 void CPU::NMI_cycle6() {
     SP = addr1; //Store SP

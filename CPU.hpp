@@ -776,6 +776,17 @@ public:
     void IRQ_cycle7();
     //Cycle 8 (1rst instr of handler): fetch_opcode
 
+    //BRK
+    //Cycle 1: fetch_opcode()
+    //Cycle 2: fetch next instruction byte (throw away), PC++
+    void BRK_cycle2();
+    //Cycle 3: interrupt_seq_cycle3()
+    //Cycle 4: interrupt_seq_cycle4()
+    //Cycle 5: push status register with B set
+    void BRK_cycle5();
+    //Cycle 6: IRQ_cycle6()
+    //Cycle 7: IRQ_cycle7() TODO: or do we poll for interrupts? Lets say no. Also, interrupt hijacking is not implemented
+
     //NMI
     //Has the same sequence as IRQ except that handler is at $FFFA - $FFFB
     void NMI_cycle6();
