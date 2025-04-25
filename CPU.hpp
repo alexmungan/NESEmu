@@ -33,7 +33,7 @@ public:
     uint8_t Y = 0x00;
     uint8_t SP = 0xFD;
     uint16_t PC = 0x0000;
-    uint8_t status_reg = 0b00000100; //bitfield
+    uint8_t status_reg = 0b00100100; //bitfield
 
     /** Interrupt poll status **/
     //Holds whether the interrupt signals were detected last cycle

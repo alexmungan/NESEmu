@@ -29,11 +29,9 @@ void NES::run() {
 
     //After 1rst cycle, system will start executing the RESET interrupt sequence
     cpu.opcode = RESET_opcode;
-
-    //TODO: temp for testing
-    //cpu.write(0x0002, 0xFF); //adl
-    //cpu.write(0x0003, 0x06); //adh
-    //cpu.write(0x0702, 0x83); //val (note: y = 3)
+    //Temp: nestest
+    //cpu.PC = 0xC000;
+    //cpu.fetch_opcode();
 
     //Main execution loop (infinite loop)
     while (true) {
