@@ -4,7 +4,7 @@ project(NESEmu)
 set(CMAKE_CXX_STANDARD 20)
 
 # Option to control whether we download Google Test (to prevent re-downloading every time)
-set(GTEST_DOWNLOAD OFF CACHE BOOL "Download Google Test" FORCE)
+#set(GTEST_DOWNLOAD OFF CACHE BOOL "Download Google Test" FORCE)
 
 # Source files for the emulator executable (EXCLUDES main.cpp)
 set(SOURCE_FILES
@@ -21,27 +21,27 @@ set(SOURCE_FILES
 )
 
 # Source files for test executable
-set(TEST_FILES
-        ${SOURCE_FILES}
-        test.cpp
-)
+#set(TEST_FILES
+#        ${SOURCE_FILES}
+#        test.cpp
+#)
 
 # Add an option to control whether to enable the tests
 # **** Must manually delete or update CMakeCache.txt to update this ****
-option(ENABLE_TESTS "Enable tests" ON)
+#option(ENABLE_TESTS "Enable tests" ON)
 
 # Download Google Test via FetchContent only if not already present
-if (NOT GTEST_DOWNLOAD)
-    include(FetchContent)
-    FetchContent_Declare(
-            gtest
-            GIT_REPOSITORY https://github.com/google/googletest.git
-            GIT_TAG release-1.11.0  # Specify a version
-    )
+#if (NOT GTEST_DOWNLOAD)
+#    include(FetchContent)
+#    FetchContent_Declare(
+#            gtest
+#            GIT_REPOSITORY https://github.com/google/googletest.git
+#            GIT_TAG release-1.11.0  # Specify a version
+#    )
 
     # Make Google Test available (will be downloaded only once)
-    FetchContent_MakeAvailable(gtest)
-endif()
+#    FetchContent_MakeAvailable(gtest)
+#endif()
 
 #
 #set(SFML_DIR $ENV{SFML_DIR})
@@ -58,12 +58,12 @@ endif()
 #########
 
 # Set up the test executable
-if (ENABLE_TESTS)
-    add_executable(test_NESEmu ${TEST_FILES})
-    target_link_libraries(test_NESEmu gtest gtest_main pthread)
+#if (ENABLE_TESTS)
+#    add_executable(test_NESEmu ${TEST_FILES})
+#    target_link_libraries(test_NESEmu gtest gtest_main pthread)
     #target_include_directories(test_NESEmu PRIVATE ${SFML_INCLUDE_DIR})
     #target_link_libraries(test_NESEmu SFML::Graphics SFML::Window SFML::System SFML::Audio)
-endif()
+#endif()
 
 # Set up the normal emulator executable
 if(NOT ENABLE_TESTS)

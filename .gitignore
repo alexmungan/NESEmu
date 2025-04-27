@@ -1,3 +1,4 @@
 cmake-build-debug
 .idea/
 ROMs/SuperMarioBros.nes
+/build_arm
