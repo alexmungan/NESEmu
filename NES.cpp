@@ -29,7 +29,7 @@ void NES::run() {
 
     //After 1rst cycle, system will start executing the RESET interrupt sequence
     cpu.opcode = RESET_opcode;
-    //Temp: nestest
+    //nestest
     //cpu.PC = 0xC000;
     //cpu.fetch_opcode();
 
@@ -52,8 +52,13 @@ void NES::run() {
             std::cout << "Cycle: " << cycles++ << std::endl;
         }
 
+        //TODO: debug
+        //std::cout << "Cycle: " << cycles++ << std::endl;
+
         //Execute CPU cycle
         auto nextCycle = cpu.getNextFunctionPtr(cpu.opcode);
+        if (nextCycle == nullptr)
+            continue;
         (cpu.*nextCycle)();
 
         //TODO: Execute 3 PPU cycles
@@ -68,7 +73,6 @@ void NES::run() {
             cpu.curr_micro_op = 0;
         }
         else if (cpu.interrupt_poll_cycle && cpu.NMI) {
-            std::cout << "HERE\n";
             cpu.opcode = NMI_opcode;
             cpu.curr_micro_op = 0;
         }
@@ -88,6 +92,20 @@ void NES::run() {
             cpu.NMI = false;
 
 
+        //Terminate for nestest test rom
+        if (cpu.PC == 0xC6BD)
+            break;
+
     }
 
+    //Nestest - dump memory
+    /*
+    for (int i = 0; i<0x0800; i++)
+        if (cpu.read(i) != 0)
+                std::cout << "mem(" << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << i << ") = " << (int)cpu.read(i) << std::endl;
+
+    */
+    //Nestest - print results
+    //std::cout << "mem(" << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << 0x0020 << ") = " << (int)cpu.read(0x0020) << std::endl;
+    //std::cout << "mem(" << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << 0x0030 << ") = " << (int)cpu.read(0x0030) << std::endl;
 }

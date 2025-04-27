@@ -76,7 +76,7 @@ public:
 private:
     /** 2A03 opcode matrix **/
     struct opInfo {
-        std::string pneumonic = "???";
+        std::string mnemonic = "???";
         AddressingMode addressing_mode = IMP;
         std::vector<cycle_operation> cycle_op_list; //List of cycle-based-operations that make up the instruction, stored in reverse order so that (instr_cycles_remaining - 1) can be used to index into it
     };
@@ -90,7 +90,7 @@ public:
     std::string addressingModeToString(AddressingMode addressing_mode);
 
     /** Helper functions to access opMatrix lookup table**/
-    std::string getPneumonic(uint16_t opcode);
+    std::string getMnemonic(uint16_t opcode);
     AddressingMode getAddressingMode(uint16_t opcode);
     cycle_operation getNextFunctionPtr(uint16_t opcode); //Gives the function Ptr to the next cycle-based operation to execute for the current instruction
     size_t getListSize(uint16_t opcode); //Get size micro op list

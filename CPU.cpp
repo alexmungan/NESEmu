@@ -5,7 +5,7 @@ CPU::CPU() {
     //Initialize the opcode matrix
     opMatrix.resize(16*16 + 3); //3 is for the interrupt sequences
     //BRK
-    opMatrix[0x00].pneumonic = "BRK";
+    opMatrix[0x00].mnemonic = "BRK";
     opMatrix[0x00].addressing_mode = IMP;
     opMatrix[0x00].cycle_op_list.push_back(&CPU::BRK_cycle2);
     opMatrix[0x00].cycle_op_list.push_back(&CPU::interrupt_seq_cycle3);
@@ -15,7 +15,7 @@ CPU::CPU() {
     opMatrix[0x00].cycle_op_list.push_back(&CPU::IRQ_cycle7);
     opMatrix[0x00].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR INDX
-    opMatrix[0x01].pneumonic = "ORA";
+    opMatrix[0x01].mnemonic = "ORA";
     opMatrix[0x01].addressing_mode = INDX;
     opMatrix[0x01].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x01].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
@@ -24,13 +24,13 @@ CPU::CPU() {
     opMatrix[0x01].cycle_op_list.push_back(&CPU::OR_final_cycle);
     opMatrix[0x01].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR ZP
-    opMatrix[0x05].pneumonic = "ORA";
+    opMatrix[0x05].mnemonic = "ORA";
     opMatrix[0x05].addressing_mode = ZP;
     opMatrix[0x05].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x05].cycle_op_list.push_back(&CPU::OR_final_cycle);
     opMatrix[0x05].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ASL ZP
-    opMatrix[0x06].pneumonic = "ASL";
+    opMatrix[0x06].mnemonic = "ASL";
     opMatrix[0x06].addressing_mode = ZP;
     opMatrix[0x06].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x06].cycle_op_list.push_back(&CPU::RMW_read_cycle);
@@ -38,30 +38,30 @@ CPU::CPU() {
     opMatrix[0x06].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x06].cycle_op_list.push_back(&CPU::fetch_opcode);
     //PHP
-    opMatrix[0x08].pneumonic = "PHP";
+    opMatrix[0x08].mnemonic = "PHP";
     opMatrix[0x08].addressing_mode = IMP;
     opMatrix[0x08].cycle_op_list.push_back(&CPU::PHP_cycle2);
     opMatrix[0x08].cycle_op_list.push_back(&CPU::push_final_cycle);
     opMatrix[0x08].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR IMM
-    opMatrix[0x09].pneumonic = "ORA";
+    opMatrix[0x09].mnemonic = "ORA";
     opMatrix[0x09].addressing_mode = IMM;
     opMatrix[0x09].cycle_op_list.push_back(&CPU::OR_IMM_cycle2);
     opMatrix[0x09].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ASL Accum
-    opMatrix[0x0A].pneumonic = "ASL";
+    opMatrix[0x0A].mnemonic = "ASL";
     opMatrix[0x0A].addressing_mode = Accum;
     opMatrix[0x0A].cycle_op_list.push_back(&CPU::ASL_Accum_cycle2);
     opMatrix[0x0A].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR ABS
-    opMatrix[0x0D].pneumonic = "ORA";
+    opMatrix[0x0D].mnemonic = "ORA";
     opMatrix[0x0D].addressing_mode = ABS;
     opMatrix[0x0D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x0D].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0x0D].cycle_op_list.push_back(&CPU::OR_final_cycle);
     opMatrix[0x0D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ASL ABS
-    opMatrix[0x0E].pneumonic = "ASL";
+    opMatrix[0x0E].mnemonic = "ASL";
     opMatrix[0x0E].addressing_mode = ABS;
     opMatrix[0x0E].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x0E].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
@@ -70,14 +70,14 @@ CPU::CPU() {
     opMatrix[0x0E].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x0E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //BPL
-    opMatrix[0x10].pneumonic = "BPL";
+    opMatrix[0x10].mnemonic = "BPL";
     opMatrix[0x10].addressing_mode = REL;
     opMatrix[0x10].cycle_op_list.push_back(&CPU::BPL_cycle2);
     opMatrix[0x10].cycle_op_list.push_back(&CPU::branch_cycle3);
     opMatrix[0x10].cycle_op_list.push_back(&CPU::branch_cycle4);
     opMatrix[0x10].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR INDY
-    opMatrix[0x11].pneumonic = "ORA";
+    opMatrix[0x11].mnemonic = "ORA";
     opMatrix[0x11].addressing_mode = INDY;
     opMatrix[0x11].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x11].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
@@ -86,14 +86,14 @@ CPU::CPU() {
     opMatrix[0x11].cycle_op_list.push_back(&CPU::OR_final_cycle);
     opMatrix[0x11].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR ZP,X
-    opMatrix[0x15].pneumonic = "ORA";
+    opMatrix[0x15].mnemonic = "ORA";
     opMatrix[0x15].addressing_mode = ZPX;
     opMatrix[0x15].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x15].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
     opMatrix[0x15].cycle_op_list.push_back(&CPU::OR_final_cycle);
     opMatrix[0x15].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ASL ZP,X
-    opMatrix[0x16].pneumonic = "ASL";
+    opMatrix[0x16].mnemonic = "ASL";
     opMatrix[0x16].addressing_mode = ZPX;
     opMatrix[0x16].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x16].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
@@ -102,12 +102,12 @@ CPU::CPU() {
     opMatrix[0x16].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x16].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CLC
-    opMatrix[0x18].pneumonic = "CLC";
+    opMatrix[0x18].mnemonic = "CLC";
     opMatrix[0x18].addressing_mode = IMP;
     opMatrix[0x18].cycle_op_list.push_back(&CPU::CLC_cycle2);
     opMatrix[0x18].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR ABS,Y
-    opMatrix[0x19].pneumonic = "ORA";
+    opMatrix[0x19].mnemonic = "ORA";
     opMatrix[0x19].addressing_mode = ABSY;
     opMatrix[0x19].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x19].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
@@ -115,7 +115,7 @@ CPU::CPU() {
     opMatrix[0x19].cycle_op_list.push_back(&CPU::OR_final_cycle);
     opMatrix[0x19].cycle_op_list.push_back(&CPU::fetch_opcode);
     //OR ABS,X
-    opMatrix[0x1D].pneumonic = "ORA";
+    opMatrix[0x1D].mnemonic = "ORA";
     opMatrix[0x1D].addressing_mode = ABSX;
     opMatrix[0x1D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x1D].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
@@ -123,7 +123,7 @@ CPU::CPU() {
     opMatrix[0x1D].cycle_op_list.push_back(&CPU::OR_final_cycle);
     opMatrix[0x1D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ASL ABS,X
-    opMatrix[0x1E].pneumonic = "ASL";
+    opMatrix[0x1E].mnemonic = "ASL";
     opMatrix[0x1E].addressing_mode = ABSX;
     opMatrix[0x1E].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x1E].cycle_op_list.push_back(&CPU::write_ABS_X_cycle3);
@@ -133,7 +133,7 @@ CPU::CPU() {
     opMatrix[0x1E].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x1E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //JSR
-    opMatrix[0x20].pneumonic = "JSR";
+    opMatrix[0x20].mnemonic = "JSR";
     opMatrix[0x20].addressing_mode = ABS;
     opMatrix[0x20].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x20].cycle_op_list.push_back(&CPU::JSR_cycle3);
@@ -142,7 +142,7 @@ CPU::CPU() {
     opMatrix[0x20].cycle_op_list.push_back(&CPU::JSR_cycle6);
     opMatrix[0x20].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND INDX
-    opMatrix[0x21].pneumonic = "AND";
+    opMatrix[0x21].mnemonic = "AND";
     opMatrix[0x21].addressing_mode = INDX;
     opMatrix[0x21].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x21].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
@@ -151,19 +151,19 @@ CPU::CPU() {
     opMatrix[0x21].cycle_op_list.push_back(&CPU::AND_final_cycle);
     opMatrix[0x21].cycle_op_list.push_back(&CPU::fetch_opcode);
     //BIT ZP
-    opMatrix[0x24].pneumonic = "BIT";
+    opMatrix[0x24].mnemonic = "BIT";
     opMatrix[0x24].addressing_mode = ZP;
     opMatrix[0x24].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x24].cycle_op_list.push_back(&CPU::BIT_final_cycle);
     opMatrix[0x24].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND ZP
-    opMatrix[0x25].pneumonic = "AND";
+    opMatrix[0x25].mnemonic = "AND";
     opMatrix[0x25].addressing_mode = ZP;
     opMatrix[0x25].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x25].cycle_op_list.push_back(&CPU::AND_final_cycle);
     opMatrix[0x25].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROL ZP
-    opMatrix[0x26].pneumonic = "ROL";
+    opMatrix[0x26].mnemonic = "ROL";
     opMatrix[0x26].addressing_mode = ZP;
     opMatrix[0x26].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x26].cycle_op_list.push_back(&CPU::RMW_read_cycle);
@@ -171,38 +171,38 @@ CPU::CPU() {
     opMatrix[0x26].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x26].cycle_op_list.push_back(&CPU::fetch_opcode);
     //PLP
-    opMatrix[0x28].pneumonic = "PLP";
+    opMatrix[0x28].mnemonic = "PLP";
     opMatrix[0x28].addressing_mode = IMP;
     opMatrix[0x28].cycle_op_list.push_back(&CPU::pull_cycle2);
     opMatrix[0x28].cycle_op_list.push_back(&CPU::pull_cycle3);
     opMatrix[0x28].cycle_op_list.push_back(&CPU::PLP_final_cycle);
     opMatrix[0x28].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND IMM
-    opMatrix[0x29].pneumonic = "AND";
+    opMatrix[0x29].mnemonic = "AND";
     opMatrix[0x29].addressing_mode = IMM;
     opMatrix[0x29].cycle_op_list.push_back(&CPU::AND_IMM_cycle2);
     opMatrix[0x29].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROL Accum
-    opMatrix[0x2A].pneumonic = "ROL";
+    opMatrix[0x2A].mnemonic = "ROL";
     opMatrix[0x2A].addressing_mode = Accum;
     opMatrix[0x2A].cycle_op_list.push_back(&CPU::ROL_Accum_cycle2);
     opMatrix[0x2A].cycle_op_list.push_back(&CPU::fetch_opcode);
     //BIT ABS
-    opMatrix[0x2C].pneumonic = "BIT";
+    opMatrix[0x2C].mnemonic = "BIT";
     opMatrix[0x2C].addressing_mode = ABS;
     opMatrix[0x2C].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x2C].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0x2C].cycle_op_list.push_back(&CPU::BIT_final_cycle);
     opMatrix[0x2C].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND ABS
-    opMatrix[0x2D].pneumonic = "AND";
+    opMatrix[0x2D].mnemonic = "AND";
     opMatrix[0x2D].addressing_mode = ABS;
     opMatrix[0x2D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x2D].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0x2D].cycle_op_list.push_back(&CPU::AND_final_cycle);
     opMatrix[0x2D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROL ABS
-    opMatrix[0x2E].pneumonic = "ROL";
+    opMatrix[0x2E].mnemonic = "ROL";
     opMatrix[0x2E].addressing_mode = ABS;
     opMatrix[0x2E].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x2E].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
@@ -211,14 +211,14 @@ CPU::CPU() {
     opMatrix[0x2E].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x2E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //BMI
-    opMatrix[0x30].pneumonic = "BMI";
+    opMatrix[0x30].mnemonic = "BMI";
     opMatrix[0x30].addressing_mode = REL;
     opMatrix[0x30].cycle_op_list.push_back(&CPU::BMI_cycle2);
     opMatrix[0x30].cycle_op_list.push_back(&CPU::branch_cycle3);
     opMatrix[0x30].cycle_op_list.push_back(&CPU::branch_cycle4);
     opMatrix[0x30].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND INDY
-    opMatrix[0x31].pneumonic = "AND";
+    opMatrix[0x31].mnemonic = "AND";
     opMatrix[0x31].addressing_mode = INDY;
     opMatrix[0x31].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x31].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
@@ -227,14 +227,14 @@ CPU::CPU() {
     opMatrix[0x31].cycle_op_list.push_back(&CPU::AND_final_cycle);
     opMatrix[0x31].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND ZP,X
-    opMatrix[0x35].pneumonic = "AND";
+    opMatrix[0x35].mnemonic = "AND";
     opMatrix[0x35].addressing_mode = ZPX;
     opMatrix[0x35].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x35].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
     opMatrix[0x35].cycle_op_list.push_back(&CPU::AND_final_cycle);
     opMatrix[0x35].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROL ZP,X
-    opMatrix[0x36].pneumonic = "ROL";
+    opMatrix[0x36].mnemonic = "ROL";
     opMatrix[0x36].addressing_mode = ZPX;
     opMatrix[0x36].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x36].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
@@ -243,12 +243,12 @@ CPU::CPU() {
     opMatrix[0x36].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x36].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SEC
-    opMatrix[0x38].pneumonic = "SEC";
+    opMatrix[0x38].mnemonic = "SEC";
     opMatrix[0x38].addressing_mode = IMP;
     opMatrix[0x38].cycle_op_list.push_back(&CPU::SEC_cycle2);
     opMatrix[0x38].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND ABS,Y
-    opMatrix[0x39].pneumonic = "AND";
+    opMatrix[0x39].mnemonic = "AND";
     opMatrix[0x39].addressing_mode = ABSY;
     opMatrix[0x39].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x39].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
@@ -256,7 +256,7 @@ CPU::CPU() {
     opMatrix[0x39].cycle_op_list.push_back(&CPU::AND_final_cycle);
     opMatrix[0x39].cycle_op_list.push_back(&CPU::fetch_opcode);
     //AND ABS,X
-    opMatrix[0x3D].pneumonic = "AND";
+    opMatrix[0x3D].mnemonic = "AND";
     opMatrix[0x3D].addressing_mode = ABSX;
     opMatrix[0x3D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x3D].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
@@ -264,7 +264,7 @@ CPU::CPU() {
     opMatrix[0x3D].cycle_op_list.push_back(&CPU::AND_final_cycle);
     opMatrix[0x3D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROL ABS,X
-    opMatrix[0x3E].pneumonic = "ROL";
+    opMatrix[0x3E].mnemonic = "ROL";
     opMatrix[0x3E].addressing_mode = ABSX;
     opMatrix[0x3E].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x3E].cycle_op_list.push_back(&CPU::write_ABS_X_cycle3);
@@ -274,7 +274,7 @@ CPU::CPU() {
     opMatrix[0x3E].cycle_op_list.push_back(&CPU::ASL_write_cycle);
     opMatrix[0x3E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //RTI
-    opMatrix[0x40].pneumonic = "RTI";
+    opMatrix[0x40].mnemonic = "RTI";
     opMatrix[0x40].addressing_mode = IMP;
     opMatrix[0x40].cycle_op_list.push_back(&CPU::RTI_cycle2);
     opMatrix[0x40].cycle_op_list.push_back(&CPU::RTI_cycle3);
@@ -283,7 +283,7 @@ CPU::CPU() {
     opMatrix[0x40].cycle_op_list.push_back(&CPU::RTI_cycle6);
     opMatrix[0x40].cycle_op_list.push_back(&CPU::fetch_opcode);
     //EOR INDX
-    opMatrix[0x41].pneumonic = "EOR";
+    opMatrix[0x41].mnemonic = "EOR";
     opMatrix[0x41].addressing_mode = INDX;
     opMatrix[0x41].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x41].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
@@ -292,13 +292,13 @@ CPU::CPU() {
     opMatrix[0x41].cycle_op_list.push_back(&CPU::EOR_final_cycle);
     opMatrix[0x41].cycle_op_list.push_back(&CPU::fetch_opcode);
     //EOR ZP
-    opMatrix[0x45].pneumonic = "EOR";
+    opMatrix[0x45].mnemonic = "EOR";
     opMatrix[0x45].addressing_mode = ZP;
     opMatrix[0x45].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x45].cycle_op_list.push_back(&CPU::EOR_final_cycle);
     opMatrix[0x45].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LSR ZP
-    opMatrix[0x46].pneumonic = "LSR";
+    opMatrix[0x46].mnemonic = "LSR";
     opMatrix[0x46].addressing_mode = ZP;
     opMatrix[0x46].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x46].cycle_op_list.push_back(&CPU::RMW_read_cycle);
@@ -306,36 +306,36 @@ CPU::CPU() {
     opMatrix[0x46].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x46].cycle_op_list.push_back(&CPU::fetch_opcode);
     //PHA
-    opMatrix[0x48].pneumonic = "PHA";
+    opMatrix[0x48].mnemonic = "PHA";
     opMatrix[0x48].addressing_mode = IMP;
     opMatrix[0x48].cycle_op_list.push_back(&CPU::PHA_cycle2);
     opMatrix[0x48].cycle_op_list.push_back(&CPU::push_final_cycle);
     opMatrix[0x48].cycle_op_list.push_back(&CPU::fetch_opcode);
     //EOR IMM
-    opMatrix[0x49].pneumonic = "EOR";
+    opMatrix[0x49].mnemonic = "EOR";
     opMatrix[0x49].addressing_mode = IMM;
     opMatrix[0x49].cycle_op_list.push_back(&CPU::EOR_IMM_cycle2);
     opMatrix[0x49].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LSR Accum
-    opMatrix[0x4A].pneumonic = "LSR";
+    opMatrix[0x4A].mnemonic = "LSR";
     opMatrix[0x4A].addressing_mode = Accum;
     opMatrix[0x4A].cycle_op_list.push_back(&CPU::LSR_Accum_cycle2);
     opMatrix[0x4A].cycle_op_list.push_back(&CPU::fetch_opcode);
     //JMP ABS
-    opMatrix[0x4C].pneumonic = "JMP";
+    opMatrix[0x4C].mnemonic = "JMP";
     opMatrix[0x4C].addressing_mode = ABS;
     opMatrix[0x4C].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x4C].cycle_op_list.push_back(&CPU::JMP_ABS_cycle3);
     opMatrix[0x4C].cycle_op_list.push_back(&CPU::fetch_opcode);
     //EOR ABS
-    opMatrix[0x4D].pneumonic = "EOR";
+    opMatrix[0x4D].mnemonic = "EOR";
     opMatrix[0x4D].addressing_mode = ABS;
     opMatrix[0x4D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x4D].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0x4D].cycle_op_list.push_back(&CPU::EOR_final_cycle);
     opMatrix[0x4D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LSR ABS
-    opMatrix[0x4E].pneumonic = "LSR";
+    opMatrix[0x4E].mnemonic = "LSR";
     opMatrix[0x4E].addressing_mode = ABS;
     opMatrix[0x4E].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x4E].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
@@ -344,14 +344,14 @@ CPU::CPU() {
     opMatrix[0x4E].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x4E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //BVC
-    opMatrix[0x50].pneumonic = "BVC";
+    opMatrix[0x50].mnemonic = "BVC";
     opMatrix[0x50].addressing_mode = REL;
     opMatrix[0x50].cycle_op_list.push_back(&CPU::BVC_cycle2);
     opMatrix[0x50].cycle_op_list.push_back(&CPU::branch_cycle3);
     opMatrix[0x50].cycle_op_list.push_back(&CPU::branch_cycle4);
     opMatrix[0x50].cycle_op_list.push_back(&CPU::fetch_opcode);
     //EOR INDY
-    opMatrix[0x51].pneumonic = "EOR";
+    opMatrix[0x51].mnemonic = "EOR";
     opMatrix[0x51].addressing_mode = INDY;
     opMatrix[0x51].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x51].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
@@ -360,14 +360,14 @@ CPU::CPU() {
     opMatrix[0x51].cycle_op_list.push_back(&CPU::EOR_final_cycle);
     opMatrix[0x51].cycle_op_list.push_back(&CPU::fetch_opcode);
     //EOR ZP,X
-    opMatrix[0x55].pneumonic = "EOR";
+    opMatrix[0x55].mnemonic = "EOR";
     opMatrix[0x55].addressing_mode = ZPX;
     opMatrix[0x55].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x55].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
     opMatrix[0x55].cycle_op_list.push_back(&CPU::EOR_final_cycle);
     opMatrix[0x55].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LSR ZP,X
-    opMatrix[0x56].pneumonic = "LSR";
+    opMatrix[0x56].mnemonic = "LSR";
     opMatrix[0x56].addressing_mode = ZPX;
     opMatrix[0x56].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x56].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
@@ -376,12 +376,12 @@ CPU::CPU() {
     opMatrix[0x56].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x56].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CLI
-    opMatrix[0x58].pneumonic = "CLI";
+    opMatrix[0x58].mnemonic = "CLI";
     opMatrix[0x58].addressing_mode = IMP;
     opMatrix[0x58].cycle_op_list.push_back(&CPU::CLI_cycle2);
     opMatrix[0x58].cycle_op_list.push_back(&CPU::fetch_opcode);
     //EOR ABS,Y
-    opMatrix[0x59].pneumonic = "EOR";
+    opMatrix[0x59].mnemonic = "EOR";
     opMatrix[0x59].addressing_mode = ABSY;
     opMatrix[0x59].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x59].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
@@ -389,7 +389,7 @@ CPU::CPU() {
     opMatrix[0x59].cycle_op_list.push_back(&CPU::EOR_final_cycle);
     opMatrix[0x59].cycle_op_list.push_back(&CPU::fetch_opcode);
     //EOR ABS,X
-    opMatrix[0x5D].pneumonic = "EOR";
+    opMatrix[0x5D].mnemonic = "EOR";
     opMatrix[0x5D].addressing_mode = ABSX;
     opMatrix[0x5D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x5D].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
@@ -397,7 +397,7 @@ CPU::CPU() {
     opMatrix[0x5D].cycle_op_list.push_back(&CPU::EOR_final_cycle);
     opMatrix[0x5D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LSR ABS,X
-    opMatrix[0x5E].pneumonic = "LSR";
+    opMatrix[0x5E].mnemonic = "LSR";
     opMatrix[0x5E].addressing_mode = ABSX;
     opMatrix[0x5E].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x5E].cycle_op_list.push_back(&CPU::write_ABS_X_cycle3);
@@ -407,7 +407,7 @@ CPU::CPU() {
     opMatrix[0x5E].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x5E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //RTS
-    opMatrix[0x60].pneumonic = "RTS";
+    opMatrix[0x60].mnemonic = "RTS";
     opMatrix[0x60].addressing_mode = IMP;
     opMatrix[0x60].cycle_op_list.push_back(&CPU::RTS_cycle2);
     opMatrix[0x60].cycle_op_list.push_back(&CPU::RTS_cycle3);
@@ -416,7 +416,7 @@ CPU::CPU() {
     opMatrix[0x60].cycle_op_list.push_back(&CPU::RTS_cycle6);
     opMatrix[0x60].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ADC INDX
-    opMatrix[0x61].pneumonic = "ADC";
+    opMatrix[0x61].mnemonic = "ADC";
     opMatrix[0x61].addressing_mode = INDX;
     opMatrix[0x61].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x61].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
@@ -425,13 +425,13 @@ CPU::CPU() {
     opMatrix[0x61].cycle_op_list.push_back(&CPU::ADC_final_cycle);
     opMatrix[0x61].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ADC ZP
-    opMatrix[0x65].pneumonic = "ADC";
+    opMatrix[0x65].mnemonic = "ADC";
     opMatrix[0x65].addressing_mode = ZP;
     opMatrix[0x65].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x65].cycle_op_list.push_back(&CPU::ADC_final_cycle);
     opMatrix[0x65].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROR ZP
-    opMatrix[0x66].pneumonic = "ROR";
+    opMatrix[0x66].mnemonic = "ROR";
     opMatrix[0x66].addressing_mode = ZP;
     opMatrix[0x66].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x66].cycle_op_list.push_back(&CPU::RMW_read_cycle);
@@ -439,24 +439,24 @@ CPU::CPU() {
     opMatrix[0x66].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x66].cycle_op_list.push_back(&CPU::fetch_opcode);
     //PLA
-    opMatrix[0x68].pneumonic = "PLA";
+    opMatrix[0x68].mnemonic = "PLA";
     opMatrix[0x68].addressing_mode = IMP;
     opMatrix[0x68].cycle_op_list.push_back(&CPU::pull_cycle2);
     opMatrix[0x68].cycle_op_list.push_back(&CPU::pull_cycle3);
     opMatrix[0x68].cycle_op_list.push_back(&CPU::PLA_final_cycle);
     opMatrix[0x68].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ADC IMM
-    opMatrix[0x69].pneumonic = "ADC";
+    opMatrix[0x69].mnemonic = "ADC";
     opMatrix[0x69].addressing_mode = IMM;
     opMatrix[0x69].cycle_op_list.push_back(&CPU::ADC_IMM_cycle2);
     opMatrix[0x69].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROR Accum
-    opMatrix[0x6A].pneumonic = "ROR";
+    opMatrix[0x6A].mnemonic = "ROR";
     opMatrix[0x6A].addressing_mode = Accum;
     opMatrix[0x6A].cycle_op_list.push_back(&CPU::ROR_Accum_cycle2);
     opMatrix[0x6A].cycle_op_list.push_back(&CPU::fetch_opcode);
     //JMP IND
-    opMatrix[0x6C].pneumonic = "JMP";
+    opMatrix[0x6C].mnemonic = "JMP";
     opMatrix[0x6C].addressing_mode = IND;
     opMatrix[0x6C].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x6C].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
@@ -464,14 +464,14 @@ CPU::CPU() {
     opMatrix[0x6C].cycle_op_list.push_back(&CPU::JMP_IND_cycle5);
     opMatrix[0x6C].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ADC ABS
-    opMatrix[0x6D].pneumonic = "ADC";
+    opMatrix[0x6D].mnemonic = "ADC";
     opMatrix[0x6D].addressing_mode = ABS;
     opMatrix[0x6D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x6D].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0x6D].cycle_op_list.push_back(&CPU::ADC_final_cycle);
     opMatrix[0x6D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROR ABS
-    opMatrix[0x6E].pneumonic = "ROR";
+    opMatrix[0x6E].mnemonic = "ROR";
     opMatrix[0x6E].addressing_mode = ABS;
     opMatrix[0x6E].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x6E].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
@@ -480,14 +480,14 @@ CPU::CPU() {
     opMatrix[0x6E].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x6E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //BVS
-    opMatrix[0x70].pneumonic = "BVS";
+    opMatrix[0x70].mnemonic = "BVS";
     opMatrix[0x70].addressing_mode = REL;
     opMatrix[0x70].cycle_op_list.push_back(&CPU::BVS_cycle2);
     opMatrix[0x70].cycle_op_list.push_back(&CPU::branch_cycle3);
     opMatrix[0x70].cycle_op_list.push_back(&CPU::branch_cycle4);
     opMatrix[0x70].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ADC INDY
-    opMatrix[0x71].pneumonic = "ADC";
+    opMatrix[0x71].mnemonic = "ADC";
     opMatrix[0x71].addressing_mode = INDY;
     opMatrix[0x71].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x71].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
@@ -496,14 +496,14 @@ CPU::CPU() {
     opMatrix[0x71].cycle_op_list.push_back(&CPU::ADC_final_cycle);
     opMatrix[0x71].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ADC ZP,X
-    opMatrix[0x75].pneumonic = "ADC";
+    opMatrix[0x75].mnemonic = "ADC";
     opMatrix[0x75].addressing_mode = ZPX;
     opMatrix[0x75].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x75].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
     opMatrix[0x75].cycle_op_list.push_back(&CPU::ADC_final_cycle);
     opMatrix[0x75].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROR ZP,X
-    opMatrix[0x76].pneumonic = "ROR";
+    opMatrix[0x76].mnemonic = "ROR";
     opMatrix[0x76].addressing_mode = ZPX;
     opMatrix[0x76].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x76].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
@@ -512,12 +512,12 @@ CPU::CPU() {
     opMatrix[0x76].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x76].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SEI
-    opMatrix[0x78].pneumonic = "SEI";
+    opMatrix[0x78].mnemonic = "SEI";
     opMatrix[0x78].addressing_mode = IMP;
     opMatrix[0x78].cycle_op_list.push_back(&CPU::SEI_cycle2);
     opMatrix[0x78].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ADC ABS,Y
-    opMatrix[0x79].pneumonic = "ADC";
+    opMatrix[0x79].mnemonic = "ADC";
     opMatrix[0x79].addressing_mode = ABSY;
     opMatrix[0x79].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x79].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
@@ -525,7 +525,7 @@ CPU::CPU() {
     opMatrix[0x79].cycle_op_list.push_back(&CPU::ADC_final_cycle);
     opMatrix[0x79].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ADC ABS,X
-    opMatrix[0x7D].pneumonic = "ADC";
+    opMatrix[0x7D].mnemonic = "ADC";
     opMatrix[0x7D].addressing_mode = ABSX;
     opMatrix[0x7D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x7D].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
@@ -533,7 +533,7 @@ CPU::CPU() {
     opMatrix[0x7D].cycle_op_list.push_back(&CPU::ADC_final_cycle);
     opMatrix[0x7D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //ROR ABS,X
-    opMatrix[0x7E].pneumonic = "ROR";
+    opMatrix[0x7E].mnemonic = "ROR";
     opMatrix[0x7E].addressing_mode = ABSX;
     opMatrix[0x7E].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x7E].cycle_op_list.push_back(&CPU::write_ABS_X_cycle3);
@@ -543,7 +543,7 @@ CPU::CPU() {
     opMatrix[0x7E].cycle_op_list.push_back(&CPU::LSR_write_cycle);
     opMatrix[0x7E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STA INDX
-    opMatrix[0x81].pneumonic = "STA";
+    opMatrix[0x81].mnemonic = "STA";
     opMatrix[0x81].addressing_mode = INDX;
     opMatrix[0x81].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x81].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
@@ -552,63 +552,63 @@ CPU::CPU() {
     opMatrix[0x81].cycle_op_list.push_back(&CPU::store_A);
     opMatrix[0x81].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STY ZP
-    opMatrix[0x84].pneumonic = "STY";
+    opMatrix[0x84].mnemonic = "STY";
     opMatrix[0x84].addressing_mode = ZP;
     opMatrix[0x84].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x84].cycle_op_list.push_back(&CPU::store_Y);
     opMatrix[0x84].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STA ZP
-    opMatrix[0x85].pneumonic = "STA";
+    opMatrix[0x85].mnemonic = "STA";
     opMatrix[0x85].addressing_mode = ZP;
     opMatrix[0x85].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x85].cycle_op_list.push_back(&CPU::store_A);
     opMatrix[0x85].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STX ZP
-    opMatrix[0x86].pneumonic = "STX";
+    opMatrix[0x86].mnemonic = "STX";
     opMatrix[0x86].addressing_mode = ZP;
     opMatrix[0x86].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x86].cycle_op_list.push_back(&CPU::store_X);
     opMatrix[0x86].cycle_op_list.push_back(&CPU::fetch_opcode);
     //DEY
-    opMatrix[0x88].pneumonic = "DEY";
+    opMatrix[0x88].mnemonic = "DEY";
     opMatrix[0x88].addressing_mode = IMP;
     opMatrix[0x88].cycle_op_list.push_back(&CPU::DEY_cycle2);
     opMatrix[0x88].cycle_op_list.push_back(&CPU::fetch_opcode);
     //TXA
-    opMatrix[0x8A].pneumonic = "TXA";
+    opMatrix[0x8A].mnemonic = "TXA";
     opMatrix[0x8A].addressing_mode = IMP;
     opMatrix[0x8A].cycle_op_list.push_back(&CPU::TXA_cycle2);
     opMatrix[0x8A].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STY ABS
-    opMatrix[0x8C].pneumonic = "STY";
+    opMatrix[0x8C].mnemonic = "STY";
     opMatrix[0x8C].addressing_mode = ABS;
     opMatrix[0x8C].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x8C].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0x8C].cycle_op_list.push_back(&CPU::store_Y);
     opMatrix[0x8C].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STA ABS
-    opMatrix[0x8D].pneumonic = "STA";
+    opMatrix[0x8D].mnemonic = "STA";
     opMatrix[0x8D].addressing_mode = ABS;
     opMatrix[0x8D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x8D].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0x8D].cycle_op_list.push_back(&CPU::store_A);
     opMatrix[0x8D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STX ABS
-    opMatrix[0x8E].pneumonic = "STX";
+    opMatrix[0x8E].mnemonic = "STX";
     opMatrix[0x8E].addressing_mode = ABS;
     opMatrix[0x8E].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x8E].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0x8E].cycle_op_list.push_back(&CPU::store_X);
     opMatrix[0x8E].cycle_op_list.push_back(&CPU::fetch_opcode);
     //BCC
-    opMatrix[0x90].pneumonic = "BCC";
+    opMatrix[0x90].mnemonic = "BCC";
     opMatrix[0x90].addressing_mode = REL;
     opMatrix[0x90].cycle_op_list.push_back(&CPU::BCC_cycle2);
     opMatrix[0x90].cycle_op_list.push_back(&CPU::branch_cycle3);
     opMatrix[0x90].cycle_op_list.push_back(&CPU::branch_cycle4);
     opMatrix[0x90].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STA (Indirect), Y
-    opMatrix[0x91].pneumonic = "STA";
+    opMatrix[0x91].mnemonic = "STA";
     opMatrix[0x91].addressing_mode = INDY;
     opMatrix[0x91].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x91].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
@@ -617,33 +617,33 @@ CPU::CPU() {
     opMatrix[0x91].cycle_op_list.push_back(&CPU::store_A);
     opMatrix[0x91].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STY ZPX
-    opMatrix[0x94].pneumonic = "STY";
+    opMatrix[0x94].mnemonic = "STY";
     opMatrix[0x94].addressing_mode = ZPX;
     opMatrix[0x94].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x94].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
     opMatrix[0x94].cycle_op_list.push_back(&CPU::store_Y);
     opMatrix[0x94].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STA ZPX
-    opMatrix[0x95].pneumonic = "STA";
+    opMatrix[0x95].mnemonic = "STA";
     opMatrix[0x95].addressing_mode = ZPX;
     opMatrix[0x95].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x95].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
     opMatrix[0x95].cycle_op_list.push_back(&CPU::store_A);
     opMatrix[0x95].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STX ZPY
-    opMatrix[0x96].pneumonic = "STX";
+    opMatrix[0x96].mnemonic = "STX";
     opMatrix[0x96].addressing_mode = ZPY;
     opMatrix[0x96].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x96].cycle_op_list.push_back(&CPU::ZP_Y_cycle3);
     opMatrix[0x96].cycle_op_list.push_back(&CPU::store_X);
     opMatrix[0x96].cycle_op_list.push_back(&CPU::fetch_opcode);
     //TYA
-    opMatrix[0x98].pneumonic = "TYA";
+    opMatrix[0x98].mnemonic = "TYA";
     opMatrix[0x98].addressing_mode = IMP;
     opMatrix[0x98].cycle_op_list.push_back(&CPU::TYA_cycle2);
     opMatrix[0x98].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STA ABS,Y
-    opMatrix[0x99].pneumonic = "STA";
+    opMatrix[0x99].mnemonic = "STA";
     opMatrix[0x99].addressing_mode = ABSY;
     opMatrix[0x99].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x99].cycle_op_list.push_back(&CPU::write_ABS_Y_cycle3);
@@ -651,12 +651,12 @@ CPU::CPU() {
     opMatrix[0x99].cycle_op_list.push_back(&CPU::store_A);
     opMatrix[0x99].cycle_op_list.push_back(&CPU::fetch_opcode);
     //TXS
-    opMatrix[0x9A].pneumonic = "TXS";
+    opMatrix[0x9A].mnemonic = "TXS";
     opMatrix[0x9A].addressing_mode = IMP;
     opMatrix[0x9A].cycle_op_list.push_back(&CPU::TXS_cycle2);
     opMatrix[0x9A].cycle_op_list.push_back(&CPU::fetch_opcode);
     //STA ABS,X
-    opMatrix[0x9D].pneumonic = "STA";
+    opMatrix[0x9D].mnemonic = "STA";
     opMatrix[0x9D].addressing_mode = ABSX;
     opMatrix[0x9D].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0x9D].cycle_op_list.push_back(&CPU::write_ABS_X_cycle3);
@@ -664,12 +664,12 @@ CPU::CPU() {
     opMatrix[0x9D].cycle_op_list.push_back(&CPU::store_A);
     opMatrix[0x9D].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDY IMM
-    opMatrix[0xA0].pneumonic = "LDY";
+    opMatrix[0xA0].mnemonic = "LDY";
     opMatrix[0xA0].addressing_mode = IMM;
     opMatrix[0xA0].cycle_op_list.push_back(&CPU::LDY_IMM_cycle2);
     opMatrix[0xA0].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDA IND,X
-    opMatrix[0xA1].pneumonic = "LDA";
+    opMatrix[0xA1].mnemonic = "LDA";
     opMatrix[0xA1].addressing_mode = INDX;
     opMatrix[0xA1].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xA1].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
@@ -678,73 +678,73 @@ CPU::CPU() {
     opMatrix[0xA1].cycle_op_list.push_back(&CPU::LDA_fetch_data);
     opMatrix[0xA1].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDY IMM
-    opMatrix[0xA2].pneumonic = "LDX";
+    opMatrix[0xA2].mnemonic = "LDX";
     opMatrix[0xA2].addressing_mode = IMM;
     opMatrix[0xA2].cycle_op_list.push_back(&CPU::LDX_IMM_cycle2);
     opMatrix[0xA2].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDY ZP
-    opMatrix[0xA4].pneumonic = "LDY";
+    opMatrix[0xA4].mnemonic = "LDY";
     opMatrix[0xA4].addressing_mode = ZP;
     opMatrix[0xA4].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xA4].cycle_op_list.push_back(&CPU::LDY_fetch_data);
     opMatrix[0xA4].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDA ZP
-    opMatrix[0xA5].pneumonic = "LDA";
+    opMatrix[0xA5].mnemonic = "LDA";
     opMatrix[0xA5].addressing_mode = ZP;
     opMatrix[0xA5].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xA5].cycle_op_list.push_back(&CPU::LDA_fetch_data);
     opMatrix[0xA5].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDX ZP
-    opMatrix[0xA6].pneumonic = "LDX";
+    opMatrix[0xA6].mnemonic = "LDX";
     opMatrix[0xA6].addressing_mode = ZP;
     opMatrix[0xA6].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xA6].cycle_op_list.push_back(&CPU::LDX_fetch_data);
     opMatrix[0xA6].cycle_op_list.push_back(&CPU::fetch_opcode);
     //TAY
-    opMatrix[0xA8].pneumonic = "TAY";
+    opMatrix[0xA8].mnemonic = "TAY";
     opMatrix[0xA8].addressing_mode = IMP;
     opMatrix[0xA8].cycle_op_list.push_back(&CPU::TAY_cycle2);
     opMatrix[0xA8].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDA IMM
-    opMatrix[0xA9].pneumonic = "LDA";
+    opMatrix[0xA9].mnemonic = "LDA";
     opMatrix[0xA9].addressing_mode = IMM;
     opMatrix[0xA9].cycle_op_list.push_back(&CPU::LDA_IMM_cycle2);
     opMatrix[0xA9].cycle_op_list.push_back(&CPU::fetch_opcode);
     //TAX
-    opMatrix[0xAA].pneumonic = "TAX";
+    opMatrix[0xAA].mnemonic = "TAX";
     opMatrix[0xAA].addressing_mode = IMP;
     opMatrix[0xAA].cycle_op_list.push_back(&CPU::TAX_cycle2);
     opMatrix[0xAA].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDY ABS
-    opMatrix[0xAC].pneumonic = "LDY";
+    opMatrix[0xAC].mnemonic = "LDY";
     opMatrix[0xAC].addressing_mode = ABS;
     opMatrix[0xAC].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xAC].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0xAC].cycle_op_list.push_back(&CPU::LDY_fetch_data);
     opMatrix[0xAC].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDA ABS
-    opMatrix[0xAD].pneumonic = "LDA";
+    opMatrix[0xAD].mnemonic = "LDA";
     opMatrix[0xAD].addressing_mode = ABS;
     opMatrix[0xAD].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xAD].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0xAD].cycle_op_list.push_back(&CPU::LDA_fetch_data);
     opMatrix[0xAD].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDX ABS
-    opMatrix[0xAE].pneumonic = "LDX";
+    opMatrix[0xAE].mnemonic = "LDX";
     opMatrix[0xAE].addressing_mode = ABS;
     opMatrix[0xAE].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xAE].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0xAE].cycle_op_list.push_back(&CPU::LDX_fetch_data);
     opMatrix[0xAE].cycle_op_list.push_back(&CPU::fetch_opcode);
     //BCS
-    opMatrix[0xB0].pneumonic = "BCS";
+    opMatrix[0xB0].mnemonic = "BCS";
     opMatrix[0xB0].addressing_mode = REL;
     opMatrix[0xB0].cycle_op_list.push_back(&CPU::BCS_cycle2);
     opMatrix[0xB0].cycle_op_list.push_back(&CPU::branch_cycle3);
     opMatrix[0xB0].cycle_op_list.push_back(&CPU::branch_cycle4);
     opMatrix[0xB0].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDA INDY
-    opMatrix[0xB1].pneumonic = "LDA";
+    opMatrix[0xB1].mnemonic = "LDA";
     opMatrix[0xB1].addressing_mode = INDY;
     opMatrix[0xB1].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xB1].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
@@ -753,33 +753,33 @@ CPU::CPU() {
     opMatrix[0xB1].cycle_op_list.push_back(&CPU::LDA_fetch_data);
     opMatrix[0xB1].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDY ZP,X
-    opMatrix[0xB4].pneumonic = "LDY";
+    opMatrix[0xB4].mnemonic = "LDY";
     opMatrix[0xB4].addressing_mode = ZPX;
     opMatrix[0xB4].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xB4].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
     opMatrix[0xB4].cycle_op_list.push_back(&CPU::LDY_fetch_data);
     opMatrix[0xB4].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDA ZP,X
-    opMatrix[0xB5].pneumonic = "LDA";
+    opMatrix[0xB5].mnemonic = "LDA";
     opMatrix[0xB5].addressing_mode = ZPX;
     opMatrix[0xB5].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xB5].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
     opMatrix[0xB5].cycle_op_list.push_back(&CPU::LDA_fetch_data);
     opMatrix[0xB5].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDX ZP,Y
-    opMatrix[0xB6].pneumonic = "LDX";
+    opMatrix[0xB6].mnemonic = "LDX";
     opMatrix[0xB6].addressing_mode = ZPY;
     opMatrix[0xB6].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xB6].cycle_op_list.push_back(&CPU::ZP_Y_cycle3);
     opMatrix[0xB6].cycle_op_list.push_back(&CPU::LDX_fetch_data);
     opMatrix[0xB6].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CLV
-    opMatrix[0xB8].pneumonic = "CLV";
+    opMatrix[0xB8].mnemonic = "CLV";
     opMatrix[0xB8].addressing_mode = IMP;
     opMatrix[0xB8].cycle_op_list.push_back(&CPU::CLV_cycle2);
     opMatrix[0xB8].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDA ABS,Y
-    opMatrix[0xB9].pneumonic = "LDA";
+    opMatrix[0xB9].mnemonic = "LDA";
     opMatrix[0xB9].addressing_mode = ABSY;
     opMatrix[0xB9].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xB9].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
@@ -787,12 +787,12 @@ CPU::CPU() {
     opMatrix[0xB9].cycle_op_list.push_back(&CPU::LDA_fetch_data);
     opMatrix[0xB9].cycle_op_list.push_back(&CPU::fetch_opcode);
     //TSX
-    opMatrix[0xBA].pneumonic = "TSX";
+    opMatrix[0xBA].mnemonic = "TSX";
     opMatrix[0xBA].addressing_mode = IMP;
     opMatrix[0xBA].cycle_op_list.push_back(&CPU::TSX_cycle2);
     opMatrix[0xBA].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDY ABS,X
-    opMatrix[0xBC].pneumonic = "LDY";
+    opMatrix[0xBC].mnemonic = "LDY";
     opMatrix[0xBC].addressing_mode = ABSX;
     opMatrix[0xBC].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xBC].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
@@ -800,7 +800,7 @@ CPU::CPU() {
     opMatrix[0xBC].cycle_op_list.push_back(&CPU::LDY_fetch_data);
     opMatrix[0xBC].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDA ABS,X
-    opMatrix[0xBD].pneumonic = "LDA";
+    opMatrix[0xBD].mnemonic = "LDA";
     opMatrix[0xBD].addressing_mode = ABSX;
     opMatrix[0xBD].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xBD].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
@@ -808,7 +808,7 @@ CPU::CPU() {
     opMatrix[0xBD].cycle_op_list.push_back(&CPU::LDA_fetch_data);
     opMatrix[0xBD].cycle_op_list.push_back(&CPU::fetch_opcode);
     //LDX ABS,Y
-    opMatrix[0xBE].pneumonic = "LDX";
+    opMatrix[0xBE].mnemonic = "LDX";
     opMatrix[0xBE].addressing_mode = ABSY;
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
@@ -816,12 +816,12 @@ CPU::CPU() {
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::LDX_fetch_data);
     opMatrix[0xBE].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CPY IMM
-    opMatrix[0xC0].pneumonic = "CPY";
+    opMatrix[0xC0].mnemonic = "CPY";
     opMatrix[0xC0].addressing_mode = IMM;
     opMatrix[0xC0].cycle_op_list.push_back(&CPU::CPY_IMM_cycle2);
     opMatrix[0xC0].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CMP INDX
-    opMatrix[0xC1].pneumonic = "AND";
+    opMatrix[0xC1].mnemonic = "AND";
     opMatrix[0xC1].addressing_mode = INDX;
     opMatrix[0xC1].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xC1].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
@@ -830,19 +830,19 @@ CPU::CPU() {
     opMatrix[0xC1].cycle_op_list.push_back(&CPU::CMP_final_cycle);
     opMatrix[0xC1].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CPY ZP
-    opMatrix[0xC4].pneumonic = "CPY";
+    opMatrix[0xC4].mnemonic = "CPY";
     opMatrix[0xC4].addressing_mode = ZP;
     opMatrix[0xC4].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xC4].cycle_op_list.push_back(&CPU::CPY_final_cycle);
     opMatrix[0xC4].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CMP ZP
-    opMatrix[0xC5].pneumonic = "CMP";
+    opMatrix[0xC5].mnemonic = "CMP";
     opMatrix[0xC5].addressing_mode = ZP;
     opMatrix[0xC5].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xC5].cycle_op_list.push_back(&CPU::CMP_final_cycle);
     opMatrix[0xC5].cycle_op_list.push_back(&CPU::fetch_opcode);
     //DEC ZP
-    opMatrix[0xC6].pneumonic = "DEC";
+    opMatrix[0xC6].mnemonic = "DEC";
     opMatrix[0xC6].addressing_mode = ZP;
     opMatrix[0xC6].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xC6].cycle_op_list.push_back(&CPU::RMW_read_cycle);
@@ -850,36 +850,36 @@ CPU::CPU() {
     opMatrix[0xC6].cycle_op_list.push_back(&CPU::DEC_write_cycle);
     opMatrix[0xC6].cycle_op_list.push_back(&CPU::fetch_opcode);
     //INY
-    opMatrix[0xC8].pneumonic = "INY";
+    opMatrix[0xC8].mnemonic = "INY";
     opMatrix[0xC8].addressing_mode = IMP;
     opMatrix[0xC8].cycle_op_list.push_back(&CPU::INY_cycle2);
     opMatrix[0xC8].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CMP IMM
-    opMatrix[0xC9].pneumonic = "CMP";
+    opMatrix[0xC9].mnemonic = "CMP";
     opMatrix[0xC9].addressing_mode = IMM;
     opMatrix[0xC9].cycle_op_list.push_back(&CPU::CMP_IMM_cycle2);
     opMatrix[0xC9].cycle_op_list.push_back(&CPU::fetch_opcode);
     //DEX
-    opMatrix[0xCA].pneumonic = "DEX";
+    opMatrix[0xCA].mnemonic = "DEX";
     opMatrix[0xCA].addressing_mode = IMP;
     opMatrix[0xCA].cycle_op_list.push_back(&CPU::DEX_cycle2);
     opMatrix[0xCA].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CPY ABS
-    opMatrix[0xCC].pneumonic = "CPY";
+    opMatrix[0xCC].mnemonic = "CPY";
     opMatrix[0xCC].addressing_mode = ABS;
     opMatrix[0xCC].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xCC].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0xCC].cycle_op_list.push_back(&CPU::CPY_final_cycle);
     opMatrix[0xCC].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CMP ABS
-    opMatrix[0xCD].pneumonic = "CMP";
+    opMatrix[0xCD].mnemonic = "CMP";
     opMatrix[0xCD].addressing_mode = ABS;
     opMatrix[0xCD].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xCD].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0xCD].cycle_op_list.push_back(&CPU::CMP_final_cycle);
     opMatrix[0xCD].cycle_op_list.push_back(&CPU::fetch_opcode);
     //DEC ABS
-    opMatrix[0xCE].pneumonic = "DEC";
+    opMatrix[0xCE].mnemonic = "DEC";
     opMatrix[0xCE].addressing_mode = ABS;
     opMatrix[0xCE].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xCE].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
@@ -888,14 +888,14 @@ CPU::CPU() {
     opMatrix[0xCE].cycle_op_list.push_back(&CPU::DEC_write_cycle);
     opMatrix[0xCE].cycle_op_list.push_back(&CPU::fetch_opcode);
     //BNE
-    opMatrix[0xD0].pneumonic = "BNE";
+    opMatrix[0xD0].mnemonic = "BNE";
     opMatrix[0xD0].addressing_mode = REL;
     opMatrix[0xD0].cycle_op_list.push_back(&CPU::BNE_cycle2);
     opMatrix[0xD0].cycle_op_list.push_back(&CPU::branch_cycle3);
     opMatrix[0xD0].cycle_op_list.push_back(&CPU::branch_cycle4);
     opMatrix[0xD0].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CMP INDY
-    opMatrix[0xD1].pneumonic = "CMP";
+    opMatrix[0xD1].mnemonic = "CMP";
     opMatrix[0xD1].addressing_mode = INDY;
     opMatrix[0xD1].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xD1].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
@@ -904,14 +904,14 @@ CPU::CPU() {
     opMatrix[0xD1].cycle_op_list.push_back(&CPU::CMP_final_cycle);
     opMatrix[0xD1].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CMP ZP,X
-    opMatrix[0xD5].pneumonic = "CMP";
+    opMatrix[0xD5].mnemonic = "CMP";
     opMatrix[0xD5].addressing_mode = ZPX;
     opMatrix[0xD5].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xD5].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
     opMatrix[0xD5].cycle_op_list.push_back(&CPU::CMP_final_cycle);
     opMatrix[0xD5].cycle_op_list.push_back(&CPU::fetch_opcode);
     //DEC ZPX
-    opMatrix[0xD6].pneumonic = "IDEC";
+    opMatrix[0xD6].mnemonic = "IDEC";
     opMatrix[0xD6].addressing_mode = ZPX;
     opMatrix[0xD6].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xD6].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
@@ -920,12 +920,12 @@ CPU::CPU() {
     opMatrix[0xD6].cycle_op_list.push_back(&CPU::DEC_write_cycle);
     opMatrix[0xD6].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CLD
-    opMatrix[0xD8].pneumonic = "CLD";
+    opMatrix[0xD8].mnemonic = "CLD";
     opMatrix[0xD8].addressing_mode = IMP;
     opMatrix[0xD8].cycle_op_list.push_back(&CPU::CLD_cycle2);
     opMatrix[0xD8].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CMP ABS,Y
-    opMatrix[0xD9].pneumonic = "CMP";
+    opMatrix[0xD9].mnemonic = "CMP";
     opMatrix[0xD9].addressing_mode = ABSY;
     opMatrix[0xD9].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xD9].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
@@ -933,7 +933,7 @@ CPU::CPU() {
     opMatrix[0xD9].cycle_op_list.push_back(&CPU::CMP_final_cycle);
     opMatrix[0xD9].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CMP ABS,X
-    opMatrix[0xDD].pneumonic = "CMP";
+    opMatrix[0xDD].mnemonic = "CMP";
     opMatrix[0xDD].addressing_mode = ABSX;
     opMatrix[0xDD].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xDD].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
@@ -941,7 +941,7 @@ CPU::CPU() {
     opMatrix[0xDD].cycle_op_list.push_back(&CPU::CMP_final_cycle);
     opMatrix[0xDD].cycle_op_list.push_back(&CPU::fetch_opcode);
     //DEC ABS,X
-    opMatrix[0xDE].pneumonic = "DEC";
+    opMatrix[0xDE].mnemonic = "DEC";
     opMatrix[0xDE].addressing_mode = ABSX;
     opMatrix[0xDE].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xDE].cycle_op_list.push_back(&CPU::write_ABS_X_cycle3);
@@ -951,12 +951,12 @@ CPU::CPU() {
     opMatrix[0xDE].cycle_op_list.push_back(&CPU::DEC_write_cycle);
     opMatrix[0xDE].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CPX IMM
-    opMatrix[0xE0].pneumonic = "CPX";
+    opMatrix[0xE0].mnemonic = "CPX";
     opMatrix[0xE0].addressing_mode = IMM;
     opMatrix[0xE0].cycle_op_list.push_back(&CPU::CPX_IMM_cycle2);
     opMatrix[0xE0].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SBC INDX
-    opMatrix[0xE1].pneumonic = "SBC";
+    opMatrix[0xE1].mnemonic = "SBC";
     opMatrix[0xE1].addressing_mode = INDX;
     opMatrix[0xE1].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xE1].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
@@ -965,19 +965,19 @@ CPU::CPU() {
     opMatrix[0xE1].cycle_op_list.push_back(&CPU::SBC_final_cycle);
     opMatrix[0xE1].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CPX ZP
-    opMatrix[0xE4].pneumonic = "CPX";
+    opMatrix[0xE4].mnemonic = "CPX";
     opMatrix[0xE4].addressing_mode = ZP;
     opMatrix[0xE4].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xE4].cycle_op_list.push_back(&CPU::CPX_final_cycle);
     opMatrix[0xE4].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SBC ZP
-    opMatrix[0xE5].pneumonic = "SBC";
+    opMatrix[0xE5].mnemonic = "SBC";
     opMatrix[0xE5].addressing_mode = ZP;
     opMatrix[0xE5].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xE5].cycle_op_list.push_back(&CPU::SBC_final_cycle);
     opMatrix[0xE5].cycle_op_list.push_back(&CPU::fetch_opcode);
     //INC ZP
-    opMatrix[0xE6].pneumonic = "INC";
+    opMatrix[0xE6].mnemonic = "INC";
     opMatrix[0xE6].addressing_mode = ZP;
     opMatrix[0xE6].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xE6].cycle_op_list.push_back(&CPU::RMW_read_cycle);
@@ -985,36 +985,36 @@ CPU::CPU() {
     opMatrix[0xE6].cycle_op_list.push_back(&CPU::INC_write_cycle);
     opMatrix[0xE6].cycle_op_list.push_back(&CPU::fetch_opcode);
     //INX
-    opMatrix[0xE8].pneumonic = "INX";
+    opMatrix[0xE8].mnemonic = "INX";
     opMatrix[0xE8].addressing_mode = IMP;
     opMatrix[0xE8].cycle_op_list.push_back(&CPU::INX_cycle2);
     opMatrix[0xE8].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SBC IMM
-    opMatrix[0xE9].pneumonic = "SBC";
+    opMatrix[0xE9].mnemonic = "SBC";
     opMatrix[0xE9].addressing_mode = IMM;
     opMatrix[0xE9].cycle_op_list.push_back(&CPU::SBC_IMM_cycle2);
     opMatrix[0xE9].cycle_op_list.push_back(&CPU::fetch_opcode);
     //NOP
-    opMatrix[0xEA].pneumonic = "NOP";
+    opMatrix[0xEA].mnemonic = "NOP";
     opMatrix[0xEA].addressing_mode = IMP;
     opMatrix[0xEA].cycle_op_list.push_back(&CPU::NOP_cycle2);
     opMatrix[0xEA].cycle_op_list.push_back(&CPU::fetch_opcode);
     //CPX ABS
-    opMatrix[0xEC].pneumonic = "CPX";
+    opMatrix[0xEC].mnemonic = "CPX";
     opMatrix[0xEC].addressing_mode = ABS;
     opMatrix[0xEC].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xEC].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0xEC].cycle_op_list.push_back(&CPU::CPX_final_cycle);
     opMatrix[0xEC].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SBC ABS
-    opMatrix[0xED].pneumonic = "SBC";
+    opMatrix[0xED].mnemonic = "SBC";
     opMatrix[0xED].addressing_mode = ABS;
     opMatrix[0xED].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xED].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
     opMatrix[0xED].cycle_op_list.push_back(&CPU::SBC_final_cycle);
     opMatrix[0xED].cycle_op_list.push_back(&CPU::fetch_opcode);
     //INC ABS
-    opMatrix[0xEE].pneumonic = "INC";
+    opMatrix[0xEE].mnemonic = "INC";
     opMatrix[0xEE].addressing_mode = ABS;
     opMatrix[0xEE].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xEE].cycle_op_list.push_back(&CPU::fetch_adh_cycle3);
@@ -1023,14 +1023,14 @@ CPU::CPU() {
     opMatrix[0xEE].cycle_op_list.push_back(&CPU::INC_write_cycle);
     opMatrix[0xEE].cycle_op_list.push_back(&CPU::fetch_opcode);
     //BEQ
-    opMatrix[0xF0].pneumonic = "BEQ";
+    opMatrix[0xF0].mnemonic = "BEQ";
     opMatrix[0xF0].addressing_mode = REL;
     opMatrix[0xF0].cycle_op_list.push_back(&CPU::BEQ_cycle2);
     opMatrix[0xF0].cycle_op_list.push_back(&CPU::branch_cycle3);
     opMatrix[0xF0].cycle_op_list.push_back(&CPU::branch_cycle4);
     opMatrix[0xF0].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SBC INDY
-    opMatrix[0xF1].pneumonic = "SBC";
+    opMatrix[0xF1].mnemonic = "SBC";
     opMatrix[0xF1].addressing_mode = INDY;
     opMatrix[0xF1].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xF1].cycle_op_list.push_back(&CPU::IND_Y_cycle3);
@@ -1039,14 +1039,14 @@ CPU::CPU() {
     opMatrix[0xF1].cycle_op_list.push_back(&CPU::SBC_final_cycle);
     opMatrix[0xF1].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SBC ZP,X
-    opMatrix[0xF5].pneumonic = "SBC";
+    opMatrix[0xF5].mnemonic = "SBC";
     opMatrix[0xF5].addressing_mode = ZPX;
     opMatrix[0xF5].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xF5].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
     opMatrix[0xF5].cycle_op_list.push_back(&CPU::SBC_final_cycle);
     opMatrix[0xF5].cycle_op_list.push_back(&CPU::fetch_opcode);
     //INC ZPX
-    opMatrix[0xF6].pneumonic = "INC";
+    opMatrix[0xF6].mnemonic = "INC";
     opMatrix[0xF6].addressing_mode = ZPX;
     opMatrix[0xF6].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xF6].cycle_op_list.push_back(&CPU::ZP_X_cycle3);
@@ -1055,12 +1055,12 @@ CPU::CPU() {
     opMatrix[0xF6].cycle_op_list.push_back(&CPU::INC_write_cycle);
     opMatrix[0xF6].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SED
-    opMatrix[0xF8].pneumonic = "SED";
+    opMatrix[0xF8].mnemonic = "SED";
     opMatrix[0xF8].addressing_mode = IMP;
     opMatrix[0xF8].cycle_op_list.push_back(&CPU::SED_cycle2);
     opMatrix[0xF8].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SBC ABS,Y
-    opMatrix[0xF9].pneumonic = "SBC";
+    opMatrix[0xF9].mnemonic = "SBC";
     opMatrix[0xF9].addressing_mode = ABSY;
     opMatrix[0xF9].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xF9].cycle_op_list.push_back(&CPU::read_ABS_Y_cycle3);
@@ -1068,7 +1068,7 @@ CPU::CPU() {
     opMatrix[0xF9].cycle_op_list.push_back(&CPU::SBC_final_cycle);
     opMatrix[0xF9].cycle_op_list.push_back(&CPU::fetch_opcode);
     //SBC ABS,X
-    opMatrix[0xFD].pneumonic = "SBC";
+    opMatrix[0xFD].mnemonic = "SBC";
     opMatrix[0xFD].addressing_mode = ABSX;
     opMatrix[0xFD].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xFD].cycle_op_list.push_back(&CPU::read_ABS_X_cycle3);
@@ -1076,7 +1076,7 @@ CPU::CPU() {
     opMatrix[0xFD].cycle_op_list.push_back(&CPU::SBC_final_cycle);
     opMatrix[0xFD].cycle_op_list.push_back(&CPU::fetch_opcode);
     //INC ABS,X
-    opMatrix[0xFE].pneumonic = "INC";
+    opMatrix[0xFE].mnemonic = "INC";
     opMatrix[0xFE].addressing_mode = ABSX;
     opMatrix[0xFE].cycle_op_list.push_back(&CPU::fetch_adl_cycle2);
     opMatrix[0xFE].cycle_op_list.push_back(&CPU::write_ABS_X_cycle3);
@@ -1089,7 +1089,7 @@ CPU::CPU() {
     /** 3 interrupt sequences **/
     //Note: these are not really opcodes/instruction, they are just stored here for programming convenience
     //RESET
-    opMatrix[RESET_opcode].pneumonic = "RESET";
+    opMatrix[RESET_opcode].mnemonic = "RESET";
     opMatrix[RESET_opcode].addressing_mode = INTERRUPT;
     opMatrix[RESET_opcode].cycle_op_list.push_back(&CPU::waste_cycle);
     opMatrix[RESET_opcode].cycle_op_list.push_back(&CPU::waste_cycle);
@@ -1100,7 +1100,7 @@ CPU::CPU() {
     opMatrix[RESET_opcode].cycle_op_list.push_back(&CPU::fetch_RESET_vector_MSB);
     opMatrix[RESET_opcode].cycle_op_list.push_back(&CPU::fetch_opcode);
     //NMI
-    opMatrix[NMI_opcode].pneumonic = "NMI";
+    opMatrix[NMI_opcode].mnemonic = "NMI";
     opMatrix[NMI_opcode].addressing_mode = INTERRUPT;
     opMatrix[NMI_opcode].cycle_op_list.push_back(&CPU::interrupt_seq_cycle1);
     opMatrix[NMI_opcode].cycle_op_list.push_back(&CPU::interrupt_seq_cycle2);
@@ -1111,7 +1111,7 @@ CPU::CPU() {
     opMatrix[NMI_opcode].cycle_op_list.push_back(&CPU::NMI_cycle7);
     opMatrix[NMI_opcode].cycle_op_list.push_back(&CPU::fetch_opcode);
     //IRQ
-    opMatrix[IRQ_opcode].pneumonic = "IRQ";
+    opMatrix[IRQ_opcode].mnemonic = "IRQ";
     opMatrix[IRQ_opcode].addressing_mode = INTERRUPT;
     opMatrix[IRQ_opcode].cycle_op_list.push_back(&CPU::interrupt_seq_cycle1);
     opMatrix[IRQ_opcode].cycle_op_list.push_back(&CPU::interrupt_seq_cycle2);
@@ -1153,9 +1153,9 @@ void CPU::write(uint16_t address, uint8_t data) {
 /** Helper functions for logging and stepMode **/
 void CPU::cpu_dump() {
     //Output the opcode or interrupt currently being executed
-    std::string pneumonic = getPneumonic(opcode);
+    std::string mneumonic = getMnemonic(opcode);
     std::string addressingMode = addressingModeToString(getAddressingMode(opcode));
-    std::cout << "Opcode: " << pneumonic << " " << addressingMode << "\n";
+    std::cout << "Opcode: " << mneumonic << " " << addressingMode << "\n";
     //Output PC
     std::cout << "PC: $"
               << std::hex
@@ -1236,8 +1236,8 @@ std::string CPU::addressingModeToString(AddressingMode addressing_mode) {
 
 /** Helper functions to access opMatrix lookup table**/
 
-std::string CPU::getPneumonic(uint16_t opcode) {
-    return opMatrix[opcode].pneumonic;
+std::string CPU::getMnemonic(uint16_t opcode) {
+    return opMatrix[opcode].mnemonic;
 }
 
 AddressingMode CPU::getAddressingMode(uint16_t opcode) {
@@ -1245,6 +1245,8 @@ AddressingMode CPU::getAddressingMode(uint16_t opcode) {
 }
 
 CPU::cycle_operation CPU::getNextFunctionPtr(uint16_t opcode) {
+    if (opMatrix[opcode].cycle_op_list.empty())
+        return nullptr;
     return opMatrix[opcode].cycle_op_list[curr_micro_op];
 }
 
