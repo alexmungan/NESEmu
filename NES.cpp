@@ -93,8 +93,8 @@ void NES::run() {
 
 
         //Terminate for nestest test rom
-        if (cpu.PC == 0xC6BD)
-            break;
+        //if (cpu.PC == 0xC6BD)
+        //    break;
 
     }
 
